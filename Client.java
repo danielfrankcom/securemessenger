@@ -19,6 +19,7 @@ class Client implements Runnable{
     public BlockingQueue<byte[]> queue = new LinkedBlockingQueue<byte[]>();
     public byte[] encodedParams; //need to share the spec
     public int aliceLen;
+    private Cipher aliceCipher;
 
     /*
     * Initialize the thread
@@ -44,7 +45,35 @@ class Client implements Runnable{
 
         try{
 
-            //System.out.println(queue.take()); //this waits until there is a message to take
+            //System.out.println(queue.take()); //this waits until there is a message to take          
+
+            generateKey(exchangeSecrets());
+     
+            byte[] recovered = aliceCipher.doFinal(queue.take());
+            System.out.println("Encrypted: " + new String(recovered));
+
+        }catch(Exception e){
+            System.out.println("Exception caught: " + e.getCause().getMessage());
+        }
+
+        System.out.println("Client exiting");
+    }
+    
+    /*
+    * Create a thread to run
+    * @return      void
+    */
+    public void start (){
+        System.out.println("Client starting");
+        if (t == null) {
+            t = new Thread (this, "client");
+            t.start ();
+        }
+    }
+
+    private byte[] exchangeSecrets(){
+        byte[] aliceSharedSecret = null;
+        try{
 
             KeyPairGenerator aliceKpairGen = KeyPairGenerator.getInstance("DH");
             aliceKpairGen.initialize(2048);
@@ -68,38 +97,28 @@ class Client implements Runnable{
             System.out.println("ALICE: Execute PHASE1 ...");
             aliceKeyAgree.doPhase(bobPubKey, true);
 
-            byte[] aliceSharedSecret = aliceKeyAgree.generateSecret();
+            aliceSharedSecret = aliceKeyAgree.generateSecret();
             aliceLen = aliceSharedSecret.length;
-            System.out.println("here?");
             sv.queue.put("done".getBytes());
-
             queue.take();
+        }catch(Exception e){
+            System.out.println("Exception caught.");
+        }
+        return aliceSharedSecret;
+    }
 
+    private void generateKey(byte[] aliceSharedSecret){
+
+        try{
             SecretKeySpec aliceAesKey = new SecretKeySpec(aliceSharedSecret, 0, 16, "AES");
-
             AlgorithmParameters aesParams = AlgorithmParameters.getInstance("AES");
             aesParams.init(encodedParams);
-            Cipher aliceCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            aliceCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
             aliceCipher.init(Cipher.DECRYPT_MODE, aliceAesKey, aesParams);
-            byte[] recovered = aliceCipher.doFinal(queue.take());
-            System.out.println("Encrypted: " + new String(recovered));
-
         }catch(Exception e){
-            System.out.println("Exception caught: " + e.getCause().getMessage());
+            System.out.println("Exception caught.");
         }
 
-        System.out.println("Client exiting");
     }
-    
-    /*
-    * Create a thread to run
-    * @return      void
-    */
-    public void start (){
-        System.out.println("Client starting");
-        if (t == null) {
-            t = new Thread (this, "client");
-            t.start ();
-        }
-    }
+
 }
