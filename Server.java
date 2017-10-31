@@ -9,7 +9,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 class Server implements Runnable {
    private Thread t;
    private Client cl;
-   public BlockingQueue<String> queue = new LinkedBlockingQueue<String>();
+   public BlockingQueue<String> queue = new LinkedBlockingQueue<String>(); //store incoming messages here
    
     /*
     * Initialize the thread
@@ -33,8 +33,8 @@ class Server implements Runnable {
     public void run(){
         System.out.println("Server running");
         try{
-            System.out.println(queue.take());
-            cl.queue.put("server -> client");
+            System.out.println(queue.take()); //this waits until there is a message to take
+            cl.queue.put("server -> client"); //put into client message queue
         } catch (InterruptedException e) {
             System.out.println("InterruptedException");
         }

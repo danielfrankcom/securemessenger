@@ -33,8 +33,8 @@ class Client implements Runnable{
     public void run(){
         System.out.println("Client running");
         try{
-            sv.queue.put("client -> server");
-            System.out.println(queue.take());
+            sv.queue.put("client -> server"); //put into server message queue
+            System.out.println(queue.take()); //this waits until there is a message to take
         } catch (InterruptedException e) {
             System.out.println("InterruptedException");
         }
