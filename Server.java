@@ -17,6 +17,8 @@ class Server implements Runnable {
    private Thread t;
    private Client cl;
    public BlockingQueue<byte[]> queue = new LinkedBlockingQueue<byte[]>(); //store incoming messages here
+   public byte[] encodedParams; //need to share the spec
+   public int bobLen;
    
     /*
     * Initialize the thread
@@ -76,8 +78,27 @@ class Server implements Runnable {
             System.out.println("BOB: Execute PHASE1 ...");
             bobKeyAgree.doPhase(alicePubKey, true);
 
+           
+            queue.take();
+            byte[] bobSharedSecret = new byte[cl.aliceLen];
+            bobLen = bobKeyAgree.generateSecret(bobSharedSecret, 0);
+            
+            SecretKeySpec bobAesKey = new SecretKeySpec(bobSharedSecret, 0, 16, "AES");
+
+            Cipher bobCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            bobCipher.init(Cipher.ENCRYPT_MODE, bobAesKey);
+            byte[] cleartext = "This is just an example".getBytes();
+            byte[] ciphertext = bobCipher.doFinal(cleartext);
+
+            // Retrieve the parameter that was used, and transfer it to Alice in
+            // encoded format
+            encodedParams = bobCipher.getParameters().getEncoded();
+            cl.encodedParams = encodedParams;
+            cl.queue.put("done".getBytes());
+            cl.queue.put(ciphertext);
+
         }catch(Exception e){
-            System.out.println("Exception caught.");
+            System.out.println("Exception caught: " + e.getMessage());
         }
 
 

@@ -17,7 +17,9 @@ class Client implements Runnable{
     private Thread t;
     private Server sv;
     public BlockingQueue<byte[]> queue = new LinkedBlockingQueue<byte[]>();
-    
+    public byte[] encodedParams; //need to share the spec
+    public int aliceLen;
+
     /*
     * Initialize the thread
     */
@@ -66,8 +68,24 @@ class Client implements Runnable{
             System.out.println("ALICE: Execute PHASE1 ...");
             aliceKeyAgree.doPhase(bobPubKey, true);
 
+            byte[] aliceSharedSecret = aliceKeyAgree.generateSecret();
+            aliceLen = aliceSharedSecret.length;
+            System.out.println("here?");
+            sv.queue.put("done".getBytes());
+
+            queue.take();
+
+            SecretKeySpec aliceAesKey = new SecretKeySpec(aliceSharedSecret, 0, 16, "AES");
+
+            AlgorithmParameters aesParams = AlgorithmParameters.getInstance("AES");
+            aesParams.init(encodedParams);
+            Cipher aliceCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            aliceCipher.init(Cipher.DECRYPT_MODE, aliceAesKey, aesParams);
+            byte[] recovered = aliceCipher.doFinal(queue.take());
+            System.out.println("Encrypted: " + new String(recovered));
+
         }catch(Exception e){
-            System.out.println("Exception caught.");
+            System.out.println("Exception caught: " + e.getCause().getMessage());
         }
 
         System.out.println("Client exiting");
