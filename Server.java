@@ -100,7 +100,7 @@ class Server implements Runnable {
 
             queue.take(); //wait for alice to set key length
 
-            byte[] bobSharedSecret = new byte[cl.aliceLen]; //store shared secret
+            byte[] bobSharedSecret = new byte[cl.len]; //store shared secret
             bobLen = bobKeyAgree.generateSecret(bobSharedSecret, 0); //set private var
 
             return bobSharedSecret;

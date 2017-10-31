@@ -19,11 +19,11 @@ class Client implements Runnable{
 
     private Thread t;
     private Server sv;
-    private Cipher aliceCipher;
+    private Cipher cipher;
 
     public BlockingQueue<byte[]> queue = new LinkedBlockingQueue<byte[]>(); //store messages from server
     public byte[] encodedParams; //need to be the same between communicating parties
-    public int aliceLen; //this is not useful, but needs to be communicated via network at one point
+    public int len; //this is not useful, but needs to be communicated via network at one point
 
     /*
     * Initialize the thread
@@ -49,7 +49,7 @@ class Client implements Runnable{
 
         try{         
             generateKey(getSharedSecret()); //using diffie-hellman
-            String message = new String(aliceCipher.doFinal(queue.take())); //get from queue and decrypt message
+            String message = new String(cipher.doFinal(queue.take())); //get from queue and decrypt message
             System.out.println("Encrypted: " + message);
         }catch(Exception e){
             System.out.println("Exception caught: " + e.getCause().getMessage());
@@ -77,29 +77,29 @@ class Client implements Runnable{
     private byte[] getSharedSecret(){
         try{
 
-            KeyPairGenerator aliceKpairGen = KeyPairGenerator.getInstance("DH");
-            aliceKpairGen.initialize(2048);
-            KeyPair aliceKpair = aliceKpairGen.generateKeyPair();
-            KeyAgreement aliceKeyAgree = KeyAgreement.getInstance("DH");
-            aliceKeyAgree.init(aliceKpair.getPrivate());
+            KeyPairGenerator kpairGen = KeyPairGenerator.getInstance("DH");
+            kpairGen.initialize(2048);
+            KeyPair kpair = kpairGen.generateKeyPair();
+            KeyAgreement keyAgree = KeyAgreement.getInstance("DH");
+            keyAgree.init(kpair.getPrivate());
             
-            byte[] alicePubKeyEnc = aliceKpair.getPublic().getEncoded();
-            sv.queue.put(alicePubKeyEnc); //put public key into server message queue
+            byte[] pubKeyEnc = kpair.getPublic().getEncoded();
+            sv.queue.put(pubKeyEnc); //put public key into server message queue
             System.out.println("client sent key");
 
             byte[] bobPubKeyEnc = queue.take(); //wait for server to generate a public key
 
-            KeyFactory aliceKeyFac = KeyFactory.getInstance("DH");
+            KeyFactory keyFac = KeyFactory.getInstance("DH");
             X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(bobPubKeyEnc);
             x509KeySpec = new X509EncodedKeySpec(bobPubKeyEnc);
-            PublicKey bobPubKey = aliceKeyFac.generatePublic(x509KeySpec);
-            aliceKeyAgree.doPhase(bobPubKey, true);
+            PublicKey bobPubKey = keyFac.generatePublic(x509KeySpec);
+            keyAgree.doPhase(bobPubKey, true);
 
-            byte[] aliceSharedSecret = aliceKeyAgree.generateSecret(); //store shared secret
-            aliceLen = aliceSharedSecret.length; //set public var for use by server (or later send over network)
+            byte[] sharedSecret = keyAgree.generateSecret(); //store shared secret
+            len = sharedSecret.length; //set public var for use by server (or later send over network)
             sv.queue.put("done".getBytes()); //notify server that this var has been set (or later not necessary)
             
-            return aliceSharedSecret;
+            return sharedSecret;
 
         }catch(Exception e){
             System.out.println("Exception caught: " + e.getCause().getMessage());
@@ -112,16 +112,16 @@ class Client implements Runnable{
     * Use shared secret to make a shared key
     * @return      void
     */
-    private void generateKey(byte[] aliceSharedSecret){
+    private void generateKey(byte[] sharedSecret){
         try{
 
             queue.take(); //wait for server to notify that params have been declared
 
-            SecretKeySpec aliceAesKey = new SecretKeySpec(aliceSharedSecret, 0, 16, "AES"); //use shared secret
+            SecretKeySpec aesKey = new SecretKeySpec(sharedSecret, 0, 16, "AES"); //use shared secret
             AlgorithmParameters aesParams = AlgorithmParameters.getInstance("AES");
             aesParams.init(encodedParams);
-            aliceCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            aliceCipher.init(Cipher.DECRYPT_MODE, aliceAesKey, aesParams); //initialize private variable to store cipher
+            cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            cipher.init(Cipher.DECRYPT_MODE, aesKey, aesParams); //initialize private variable to store cipher
 
         }catch(Exception e){
             System.out.println("Exception caught.");
