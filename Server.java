@@ -1,6 +1,13 @@
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import java.security.*;
+import java.security.spec.*;
+import java.security.interfaces.*;
+import javax.crypto.*;
+import javax.crypto.spec.*;
+import javax.crypto.interfaces.*;
+
 /*
 * Server portion of the client/server communication
 * Wait for initialization from client
@@ -9,7 +16,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 class Server implements Runnable {
    private Thread t;
    private Client cl;
-   public BlockingQueue<String> queue = new LinkedBlockingQueue<String>(); //store incoming messages here
+   public BlockingQueue<byte[]> queue = new LinkedBlockingQueue<byte[]>(); //store incoming messages here
    
     /*
     * Initialize the thread
@@ -32,12 +39,48 @@ class Server implements Runnable {
     */
     public void run(){
         System.out.println("Server running");
+
         try{
-            System.out.println(queue.take()); //this waits until there is a message to take
-            cl.queue.put("server -> client"); //put into client message queue
-        } catch (InterruptedException e) {
-            System.out.println("InterruptedException");
+
+            byte[] alicePubKeyEnc = queue.take();
+            //cl.queue.put("server -> client".getBytes()); //put into client message queue
+
+            KeyFactory bobKeyFac = KeyFactory.getInstance("DH");
+            X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(alicePubKeyEnc);
+
+            PublicKey alicePubKey = bobKeyFac.generatePublic(x509KeySpec);
+
+            /*
+            * Bob gets the DH parameters associated with Alice's public key.
+            * He must use the same parameters when he generates his own key
+            * pair.
+            */
+            DHParameterSpec dhParamFromAlicePubKey = ((DHPublicKey)alicePubKey).getParams();
+
+            // Bob creates his own DH key pair
+            System.out.println("BOB: Generate DH keypair ...");
+            KeyPairGenerator bobKpairGen = KeyPairGenerator.getInstance("DH");
+            bobKpairGen.initialize(dhParamFromAlicePubKey);
+            KeyPair bobKpair = bobKpairGen.generateKeyPair();
+
+            // Bob creates and initializes his DH KeyAgreement object
+            System.out.println("BOB: Initialization ...");
+            KeyAgreement bobKeyAgree = KeyAgreement.getInstance("DH");
+            bobKeyAgree.init(bobKpair.getPrivate());
+
+            // Bob encodes his public key, and sends it over to Alice.
+            byte[] bobPubKeyEnc = bobKpair.getPublic().getEncoded();
+            cl.queue.put(bobPubKeyEnc);
+            System.out.println("client sent key");
+
+            System.out.println("BOB: Execute PHASE1 ...");
+            bobKeyAgree.doPhase(alicePubKey, true);
+
+        }catch(Exception e){
+            System.out.println("Exception caught.");
         }
+
+
         System.out.println("Server exiting");
     }
 

@@ -1,6 +1,13 @@
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import java.security.*;
+import java.security.spec.*;
+import java.security.interfaces.*;
+import javax.crypto.*;
+import javax.crypto.spec.*;
+import javax.crypto.interfaces.*;
+
 /*
 * Client portion of the client/server communication
 * Initialize communication with the server
@@ -9,7 +16,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 class Client implements Runnable{
     private Thread t;
     private Server sv;
-    public BlockingQueue<String> queue = new LinkedBlockingQueue<String>();
+    public BlockingQueue<byte[]> queue = new LinkedBlockingQueue<byte[]>();
     
     /*
     * Initialize the thread
@@ -32,12 +39,37 @@ class Client implements Runnable{
     */
     public void run(){
         System.out.println("Client running");
+
         try{
-            sv.queue.put("client -> server"); //put into server message queue
-            System.out.println(queue.take()); //this waits until there is a message to take
-        } catch (InterruptedException e) {
-            System.out.println("InterruptedException");
+
+            //System.out.println(queue.take()); //this waits until there is a message to take
+
+            KeyPairGenerator aliceKpairGen = KeyPairGenerator.getInstance("DH");
+            aliceKpairGen.initialize(2048);
+            KeyPair aliceKpair = aliceKpairGen.generateKeyPair();
+            // Alice creates and initializes her DH KeyAgreement object
+            System.out.println("ALICE: Initialization ...");
+            KeyAgreement aliceKeyAgree = KeyAgreement.getInstance("DH");
+            aliceKeyAgree.init(aliceKpair.getPrivate());
+            
+            // Alice encodes her public key, and sends it over to Bob.
+            byte[] alicePubKeyEnc = aliceKpair.getPublic().getEncoded();
+            sv.queue.put(alicePubKeyEnc); //put into server message queue
+            System.out.println("client sent key");
+
+            byte[] bobPubKeyEnc = queue.take();
+
+            KeyFactory aliceKeyFac = KeyFactory.getInstance("DH");
+            X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(bobPubKeyEnc);
+            x509KeySpec = new X509EncodedKeySpec(bobPubKeyEnc);
+            PublicKey bobPubKey = aliceKeyFac.generatePublic(x509KeySpec);
+            System.out.println("ALICE: Execute PHASE1 ...");
+            aliceKeyAgree.doPhase(bobPubKey, true);
+
+        }catch(Exception e){
+            System.out.println("Exception caught.");
         }
+
         System.out.println("Client exiting");
     }
     
@@ -51,5 +83,29 @@ class Client implements Runnable{
             t = new Thread (this, "client");
             t.start ();
         }
+    }
+
+    private static void byte2hex(byte b, StringBuffer buf) {
+        char[] hexChars = { '0', '1', '2', '3', '4', '5', '6', '7', '8',
+                '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+        int high = ((b & 0xf0) >> 4);
+        int low = (b & 0x0f);
+        buf.append(hexChars[high]);
+        buf.append(hexChars[low]);
+    }
+
+    /*
+     * Converts a byte array to hex string
+     */
+    private static String toHexString(byte[] block) {
+        StringBuffer buf = new StringBuffer();
+        int len = block.length;
+        for (int i = 0; i < len; i++) {
+            byte2hex(block[i], buf);
+            if (i < len-1) {
+                buf.append(":");
+            }
+        }
+        return buf.toString();
     }
 }
