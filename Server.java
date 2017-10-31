@@ -48,13 +48,9 @@ class Server implements Runnable {
     public void run(){
         System.out.println("Server running");
 
-        try{
-            generateKey(getSharedSecret()); //using diffie-hellman
-            byte[] ciphertext = cipher.doFinal("secret message goes here".getBytes()); //encrypt message
-            cl.queue.put(ciphertext); //put message in client message queue
-        }catch(Exception e){
-            System.out.println("Exception caught: " + e.getCause().getMessage());
-        }
+        generateKey(getSharedSecret()); //using diffie-hellman
+
+        sendMessage("secret message goes here"); //send message
 
         System.out.println("Server exiting");
     }
@@ -114,6 +110,7 @@ class Server implements Runnable {
 
     /*
     * Use shared secret to make a shared key
+    * @param       byte[] sharedSecret
     * @return      void
     */
     private void generateKey(byte[] sharedSecret){
@@ -129,6 +126,34 @@ class Server implements Runnable {
 
         }catch(Exception e){
             System.out.println("Exception caught.");
+        }
+    }
+
+    /*
+    * Wait for message in queue and decrypt
+    * @return      String message
+    */
+    private String getMessage(){
+        try{          
+            String message = new String(cipher.doFinal(queue.take())); //get from queue and decrypt message
+            return message;
+        }catch(Exception e){
+            System.out.println("Exception caught: " + e.getCause().getMessage());
+        }
+        return null;
+    }
+
+    /*
+    * Send message to client message queue
+    * @param       String message
+    * @return      void
+    */
+    private void sendMessage(String message){
+        try{          
+            byte[] ciphertext = cipher.doFinal(message.getBytes()); //encrypt message
+            cl.queue.put(ciphertext); //put message in client message queue
+        }catch(Exception e){
+            System.out.println("Exception caught: " + e.getCause().getMessage());
         }
     }
 
