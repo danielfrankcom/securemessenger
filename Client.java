@@ -87,13 +87,13 @@ class Client implements Runnable{
             sv.queue.put(pubKeyEnc); //put public key into server message queue
             System.out.println("client sent key");
 
-            byte[] bobPubKeyEnc = queue.take(); //wait for server to generate a public key
+            byte[] clientPubKeyEnc = queue.take(); //wait for server to generate a public key
 
             KeyFactory keyFac = KeyFactory.getInstance("DH");
-            X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(bobPubKeyEnc);
-            x509KeySpec = new X509EncodedKeySpec(bobPubKeyEnc);
-            PublicKey bobPubKey = keyFac.generatePublic(x509KeySpec);
-            keyAgree.doPhase(bobPubKey, true);
+            X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(clientPubKeyEnc);
+            x509KeySpec = new X509EncodedKeySpec(clientPubKeyEnc);
+            PublicKey clientPubKey = keyFac.generatePublic(x509KeySpec);
+            keyAgree.doPhase(clientPubKey, true);
 
             byte[] sharedSecret = keyAgree.generateSecret(); //store shared secret
             len = sharedSecret.length; //set public var for use by server (or later send over network)

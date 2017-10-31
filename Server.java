@@ -20,11 +20,11 @@ import javax.crypto.interfaces.DHPublicKey;
 class Server implements Runnable {
    private Thread t;
    private Client cl;
-   private Cipher bobCipher;
+   private Cipher cipher;
 
    public BlockingQueue<byte[]> queue = new LinkedBlockingQueue<byte[]>(); //store messages from client
    public byte[] encodedParams; //need to be the same between communicating parties
-   public int bobLen; //this is not useful, but needs to be communicated via network at one point
+   public int len; //this is not useful, but needs to be communicated via network at one point
    
     /*
     * Initialize the thread
@@ -50,7 +50,7 @@ class Server implements Runnable {
 
         try{
             generateKey(getSharedSecret()); //using diffie-hellman
-            byte[] ciphertext = bobCipher.doFinal("secret message goes here".getBytes()); //encrypt message
+            byte[] ciphertext = cipher.doFinal("secret message goes here".getBytes()); //encrypt message
             cl.queue.put(ciphertext); //put message in client message queue
         }catch(Exception e){
             System.out.println("Exception caught: " + e.getCause().getMessage());
@@ -78,32 +78,32 @@ class Server implements Runnable {
     private byte[] getSharedSecret(){
         try{
 
-            byte[] alicePubKeyEnc = queue.take(); //wait for client to generate a public key
+            byte[] clientPubKeyEnc = queue.take(); //wait for client to generate a public key
 
-            KeyFactory bobKeyFac = KeyFactory.getInstance("DH");
-            X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(alicePubKeyEnc);
-            PublicKey alicePubKey = bobKeyFac.generatePublic(x509KeySpec);
+            KeyFactory keyFac = KeyFactory.getInstance("DH");
+            X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(clientPubKeyEnc);
+            PublicKey clientPubKey = keyFac.generatePublic(x509KeySpec);
 
-            DHParameterSpec dhParamFromAlicePubKey = ((DHPublicKey)alicePubKey).getParams(); //ensure params are the same for both keys
-            KeyPairGenerator bobKpairGen = KeyPairGenerator.getInstance("DH");
-            bobKpairGen.initialize(dhParamFromAlicePubKey);
-            KeyPair bobKpair = bobKpairGen.generateKeyPair();
+            DHParameterSpec dhParamFromClientPubKey = ((DHPublicKey)clientPubKey).getParams(); //ensure params are the same for both keys
+            KeyPairGenerator kPairGen = KeyPairGenerator.getInstance("DH");
+            kPairGen.initialize(dhParamFromClientPubKey);
+            KeyPair kPair = kPairGen.generateKeyPair();
             
-            KeyAgreement bobKeyAgree = KeyAgreement.getInstance("DH");
-            bobKeyAgree.init(bobKpair.getPrivate());
+            KeyAgreement keyAgree = KeyAgreement.getInstance("DH");
+            keyAgree.init(kPair.getPrivate());
 
-            byte[] bobPubKeyEnc = bobKpair.getPublic().getEncoded();
-            cl.queue.put(bobPubKeyEnc); //put public key in client message queue
+            byte[] pubKeyEnc = kPair.getPublic().getEncoded();
+            cl.queue.put(pubKeyEnc); //put public key in client message queue
             System.out.println("client sent key");
 
-            bobKeyAgree.doPhase(alicePubKey, true);
+            keyAgree.doPhase(clientPubKey, true);
 
-            queue.take(); //wait for alice to set key length
+            queue.take(); //wait for client to set key length
 
-            byte[] bobSharedSecret = new byte[cl.len]; //store shared secret
-            bobLen = bobKeyAgree.generateSecret(bobSharedSecret, 0); //set private var
+            byte[] sharedSecret = new byte[cl.len]; //store shared secret
+            len = keyAgree.generateSecret(sharedSecret, 0); //set private var
 
-            return bobSharedSecret;
+            return sharedSecret;
 
         }catch(Exception e){
             System.out.println("Exception caught: " + e.getCause().getMessage());
@@ -116,14 +116,14 @@ class Server implements Runnable {
     * Use shared secret to make a shared key
     * @return      void
     */
-    private void generateKey(byte[] bobSharedSecret){
+    private void generateKey(byte[] sharedSecret){
         try{
 
-            SecretKeySpec bobAesKey = new SecretKeySpec(bobSharedSecret, 0, 16, "AES"); //use shared secret
-            bobCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            bobCipher.init(Cipher.ENCRYPT_MODE, bobAesKey); //initialize private variable to store cipher
+            SecretKeySpec aesKey = new SecretKeySpec(sharedSecret, 0, 16, "AES"); //use shared secret
+            cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, aesKey); //initialize private variable to store cipher
 
-            encodedParams = bobCipher.getParameters().getEncoded(); //store params to send to client          
+            encodedParams = cipher.getParameters().getEncoded(); //store params to send to client          
             cl.encodedParams = encodedParams; //share params with client
             cl.queue.put("done".getBytes()); //notify client that params have been shared
 
