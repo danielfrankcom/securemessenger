@@ -48,7 +48,7 @@ class Client implements Runnable{
         System.out.println("Client running");
 
         try{         
-            generateKey(getSharedSecret());
+            generateKey(getSharedSecret()); //using diffie-hellman
             String message = new String(aliceCipher.doFinal(queue.take())); //get from queue and decrypt message
             System.out.println("Encrypted: " + message);
         }catch(Exception e){
@@ -115,7 +115,7 @@ class Client implements Runnable{
     private void generateKey(byte[] aliceSharedSecret){
         try{
 
-            queue.take(); //wait for server to generate key and notify client
+            queue.take(); //wait for server to notify that params have been declared
 
             SecretKeySpec aliceAesKey = new SecretKeySpec(aliceSharedSecret, 0, 16, "AES"); //use shared secret
             AlgorithmParameters aesParams = AlgorithmParameters.getInstance("AES");
