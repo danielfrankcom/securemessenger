@@ -20,6 +20,8 @@ import javax.crypto.interfaces.DHPublicKey;
 class Server implements Runnable {
    private Thread t;
    private Client cl;
+   private Cipher bobCipher;
+
    public BlockingQueue<byte[]> queue = new LinkedBlockingQueue<byte[]>(); //store incoming messages here
    public byte[] encodedParams; //need to share the spec
    public int bobLen;
@@ -47,20 +49,44 @@ class Server implements Runnable {
         System.out.println("Server running");
 
         try{
+            generateKey(getSharedSecret());
+
+            byte[] cleartext = "This is just an example".getBytes();
+            byte[] ciphertext = bobCipher.doFinal(cleartext);
+            cl.queue.put(ciphertext);
+        }catch(Exception e){
+            System.out.println("Exception caught: " + e.getCause().getMessage());
+        }
+
+        System.out.println("Server exiting");
+    }
+
+    /*
+    * Create a thread to run
+    * @return      void
+    */
+    public void start (){
+        System.out.println("Server starting");
+        if (t == null) {
+            t = new Thread (this, "server");
+            t.start ();
+        }
+    }
+
+    /*
+    * Get a shared secret between client and server
+    * @return      byte[] shared secret
+    */
+    private byte[] getSharedSecret(){
+        try{
 
             byte[] alicePubKeyEnc = queue.take();
-            //cl.queue.put("server -> client".getBytes()); //put into client message queue
 
             KeyFactory bobKeyFac = KeyFactory.getInstance("DH");
             X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(alicePubKeyEnc);
 
             PublicKey alicePubKey = bobKeyFac.generatePublic(x509KeySpec);
 
-            /*
-            * Bob gets the DH parameters associated with Alice's public key.
-            * He must use the same parameters when he generates his own key
-            * pair.
-            */
             DHParameterSpec dhParamFromAlicePubKey = ((DHPublicKey)alicePubKey).getParams();
 
             // Bob creates his own DH key pair
@@ -82,42 +108,44 @@ class Server implements Runnable {
             System.out.println("BOB: Execute PHASE1 ...");
             bobKeyAgree.doPhase(alicePubKey, true);
 
-           
             queue.take();
+
             byte[] bobSharedSecret = new byte[cl.aliceLen];
             bobLen = bobKeyAgree.generateSecret(bobSharedSecret, 0);
-            
+
+            return bobSharedSecret;
+
+        }catch(Exception e){
+            System.out.println("Exception caught: " + e.getCause().getMessage());
+        }
+
+        return null;
+    }
+
+    /*
+    * Use shared secret to make a shared key
+    * @return      void
+    */
+    private void generateKey(byte[] bobSharedSecret){
+        try{
+
             SecretKeySpec bobAesKey = new SecretKeySpec(bobSharedSecret, 0, 16, "AES");
 
-            Cipher bobCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            bobCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
             bobCipher.init(Cipher.ENCRYPT_MODE, bobAesKey);
-            byte[] cleartext = "This is just an example".getBytes();
-            byte[] ciphertext = bobCipher.doFinal(cleartext);
 
             // Retrieve the parameter that was used, and transfer it to Alice in
             // encoded format
             encodedParams = bobCipher.getParameters().getEncoded();
+            
+            
             cl.encodedParams = encodedParams;
             cl.queue.put("done".getBytes());
-            cl.queue.put(ciphertext);
+            
 
         }catch(Exception e){
-            System.out.println("Exception caught: " + e.getMessage());
-        }
-
-
-        System.out.println("Server exiting");
-    }
-
-    /*
-    * Create a thread to run
-    * @return      void
-    */
-    public void start (){
-        System.out.println("Server starting");
-        if (t == null) {
-            t = new Thread (this, "server");
-            t.start ();
+            System.out.println("Exception caught.");
         }
     }
+
 }

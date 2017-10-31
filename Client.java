@@ -16,6 +16,7 @@ import javax.crypto.spec.SecretKeySpec;
 * Send messages to server and receive messages from server
 */
 class Client implements Runnable{
+
     private Thread t;
     private Server sv;
     private Cipher aliceCipher;
@@ -97,7 +98,7 @@ class Client implements Runnable{
             byte[] aliceSharedSecret = aliceKeyAgree.generateSecret(); //store shared secret
             aliceLen = aliceSharedSecret.length; //set public var for use by server (or later send over network)
             sv.queue.put("done".getBytes()); //notify server that this var has been set (or later not necessary)
-            queue.take(); //wait for server to process
+            
             return aliceSharedSecret;
 
         }catch(Exception e){
@@ -113,6 +114,8 @@ class Client implements Runnable{
     */
     private void generateKey(byte[] aliceSharedSecret){
         try{
+
+            queue.take(); //wait for server to generate key and notify client
 
             SecretKeySpec aliceAesKey = new SecretKeySpec(aliceSharedSecret, 0, 16, "AES"); //use shared secret
             AlgorithmParameters aesParams = AlgorithmParameters.getInstance("AES");
