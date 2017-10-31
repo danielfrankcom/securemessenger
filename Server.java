@@ -3,33 +3,33 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 class Server implements Runnable {
    private Thread t;
-   private String threadName;
+   private Client cl;
    public BlockingQueue<String> queue = new LinkedBlockingQueue<String>();
    
-   Server( String name) {
-      threadName = name;
-      System.out.println("Creating " +  threadName );
-   }
+    Server() {
+        System.out.println("Server initializing");
+    }
+    
+    public void assign(Client client){
+        cl = client;
+    }
    
-   public void run() {
-      System.out.println("Running " +  threadName );
-      try {
-         for(int i = 4; i > 0; i--) {
-            System.out.println("Thread: " + threadName + ", " + i);
-            // Let the thread sleep for a while.
-            Thread.sleep(50);
-         }
-      } catch (InterruptedException e) {
-         System.out.println("Thread " +  threadName + " interrupted.");
-      }
-      System.out.println("Thread " +  threadName + " exiting.");
-   }
+    public void run(){
+        System.out.println("Server running");
+        try{
+            System.out.println(queue.take());
+            cl.queue.put("server -> client");
+        } catch (InterruptedException e) {
+            System.out.println("InterruptedException");
+        }
+        System.out.println("Server exiting");
+    }
    
-   public void start () {
-      System.out.println("Starting " +  threadName );
-      if (t == null) {
-         t = new Thread (this, threadName);
-         t.start ();
-      }
-   }
+    public void start (){
+        System.out.println("Server starting");
+        if (t == null) {
+            t = new Thread (this, "server");
+            t.start ();
+        }
+    }
 }
