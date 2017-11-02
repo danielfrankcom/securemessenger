@@ -10,6 +10,9 @@ import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
 import javax.crypto.spec.SecretKeySpec;
 
+import java.rmi.registry.LocateRegistry; 
+import java.rmi.registry.Registry; 
+
 /*
 * Client portion of the client/server communication
 * Initialize communication with the server
@@ -144,8 +147,16 @@ class Client{
     * Main method used to run the class
     * @return      void
     */
-    public static void main(String[] args){
+    public static void main(String[] args) throws Exception{
         System.out.println("client");
+        
+        Registry registry = LocateRegistry.getRegistry(null); 
+        
+        // Looking up the registry for the remote object 
+        CommunicationInterface stub = (CommunicationInterface) registry.lookup("Server"); 
+
+        // Calling the remote method using the obtained object 
+        stub.print(); 
     }
 
 }
