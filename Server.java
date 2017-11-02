@@ -63,8 +63,9 @@ class Server implements CommunicationInterface{
     * Override communication method print()
     * @return      void
     */
-    public void print(){
+    public String print(){
         System.out.println("This was successfully printed by the client");
+        return "secret text";
     }
 
     /*

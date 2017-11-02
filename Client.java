@@ -18,7 +18,7 @@ import java.rmi.registry.Registry;
 * Initialize communication with the server
 * Send messages to server and receive messages from server
 */
-class Client{
+class Client {
 
     private Server sv;
     private Cipher cipher;
@@ -156,7 +156,7 @@ class Client{
         CommunicationInterface stub = (CommunicationInterface) registry.lookup("Server"); 
 
         // Calling the remote method using the obtained object 
-        stub.print(); 
+        System.out.println(stub.print());
     }
 
 }
