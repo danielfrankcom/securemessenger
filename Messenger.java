@@ -15,7 +15,8 @@ import javax.crypto.interfaces.DHPublicKey;
 import java.rmi.registry.Registry; 
 import java.rmi.registry.LocateRegistry; 
 import java.rmi.RemoteException; 
-import java.rmi.server.UnicastRemoteObject; 
+import java.rmi.server.UnicastRemoteObject;
+import java.util.Scanner;
 import java.util.UUID;
 
 /*
@@ -24,12 +25,15 @@ import java.util.UUID;
 * Receive messages from client and send messages to client
 */
 class Messenger implements CommunicationInterface{
+
+    private static Registry registry;
     
     /*
     * Initialize the thread
     **/
-    Messenger() {
+    Messenger() throws Exception {
         System.out.println("Server initializing");
+        registry = LocateRegistry.getRegistry();
     }
 
     /*
@@ -48,7 +52,7 @@ class Messenger implements CommunicationInterface{
     * @param       String sender id
     * @return      void
     */
-    public void init(String id){
+    public void init(String id) throws Exception{
         CommunicationInterface server = (CommunicationInterface) registry.lookup(id); 
         server.message("public message"); //msg will be encrypted in future
     }
@@ -71,10 +75,25 @@ class Messenger implements CommunicationInterface{
 
         System.out.println(id);
         CommunicationInterface stub = (CommunicationInterface) UnicastRemoteObject.exportObject(self, 0); 
-        Registry registry = LocateRegistry.getRegistry();
         registry.bind(id, stub);
 
-        
+        Scanner scanner = new Scanner(System.in);
+
+        Boolean valid = false;
+        while(!valid){
+            System.out.println("Would you like to connect (c) or listen for connections (l)?");
+            String resp = scanner.nextLine();
+
+            if(resp.equals("c")){
+
+                valid = true;
+            }else if(resp.equals("l")){
+
+                valid = true;
+            }else{
+                System.out.println("Please type 'c' or 'l'.");
+            }
+        }
         
     }
 
