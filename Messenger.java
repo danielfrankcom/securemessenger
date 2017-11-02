@@ -53,8 +53,8 @@ class Messenger implements CommunicationInterface{
     * @return      void
     */
     public void init(String id) throws Exception{
-        CommunicationInterface server = (CommunicationInterface) registry.lookup(id); 
-        server.message("public message"); //msg will be encrypted in future
+        CommunicationInterface sender = (CommunicationInterface) registry.lookup(id); 
+        sender.message("receiver to sender"); //msg will be encrypted in future
     }
 
     /*
@@ -81,11 +81,15 @@ class Messenger implements CommunicationInterface{
 
         Boolean valid = false;
         while(!valid){
-            System.out.println("Would you like to connect (c) or listen for connections (l)?");
+            System.out.print("Would you like to connect (c) or listen for connections (l)? ");
             String resp = scanner.nextLine();
 
             if(resp.equals("c")){
-
+                System.out.print("Enter id: ");
+                resp = scanner.nextLine();
+                CommunicationInterface receiver = (CommunicationInterface) registry.lookup(resp);
+                receiver.init(id);
+                receiver.message("sender to receiver");
                 valid = true;
             }else if(resp.equals("l")){
 
