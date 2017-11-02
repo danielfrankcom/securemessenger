@@ -17,7 +17,7 @@ import javax.crypto.interfaces.DHPublicKey;
 * Wait for initialization from client
 * Receive messages from client and send messages to client
 */
-class Server {
+class Server implements CommunicationInterface{
    private Client cl;
    private Cipher cipher;
 
@@ -52,6 +52,10 @@ class Server {
         sendMessage("secret message goes here"); //send message
 
         System.out.println("Server exiting");
+    }
+
+    public void print(){
+        System.out.println("This was successfully printed by the client");
     }
 
     /*
