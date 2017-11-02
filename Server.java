@@ -12,6 +12,11 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.interfaces.DHPublicKey;
 
+import java.rmi.registry.Registry; 
+import java.rmi.registry.LocateRegistry; 
+import java.rmi.RemoteException; 
+import java.rmi.server.UnicastRemoteObject; 
+
 /*
 * Server portion of the client/server communication
 * Wait for initialization from client
@@ -156,8 +161,14 @@ class Server implements CommunicationInterface{
     * Main method used to run the class
     * @return      void
     */
-    public static void main(String[] args){
+    public static void main(String[] args) throws Exception{
         System.out.println("server");
+        Server sv = new Server(); 
+         
+        CommunicationInterface stub = (CommunicationInterface) UnicastRemoteObject.exportObject(sv, 0);   
+        Registry registry = LocateRegistry.getRegistry(); 
+        
+        registry.bind("Server", stub);  
     }
 
 }
