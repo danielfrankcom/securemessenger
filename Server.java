@@ -144,4 +144,12 @@ class Server {
         }
     }
 
+    /*
+    * Main method used to run the class
+    * @return      void
+    */
+    public static void main(String[] args){
+        System.out.println("server");
+    }
+
 }

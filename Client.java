@@ -139,5 +139,13 @@ class Client{
             System.out.println("Exception caught: " + e.getCause().getMessage());
         }
     }
+    
+    /*
+    * Main method used to run the class
+    * @return      void
+    */
+    public static void main(String[] args){
+        System.out.println("client");
+    }
 
 }
