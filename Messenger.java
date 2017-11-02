@@ -25,7 +25,6 @@ import java.util.UUID;
 */
 class Messenger implements CommunicationInterface{
     
-
     /*
     * Initialize the thread
     **/
@@ -62,14 +61,9 @@ class Messenger implements CommunicationInterface{
         
         System.out.println("running");
         Messenger self = new Messenger();
-
-        Boolean isServer = false;
         String id;
 
         if(args.length > 0){
-            if(args[0].equals("server")){
-                isServer = true;
-            }
             id = args[0];          
         }else{
             id = UUID.randomUUID().toString();
@@ -80,11 +74,7 @@ class Messenger implements CommunicationInterface{
         Registry registry = LocateRegistry.getRegistry();
         registry.bind(id, stub);
 
-        if(!isServer){
-            
-        }else{
-            self.message("self send");
-        }
+        
         
     }
 
