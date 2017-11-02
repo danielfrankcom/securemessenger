@@ -8,8 +8,8 @@ public class SecureMessenger {
         Server sv = new Server();
         cl.assign(sv);
         sv.assign(cl);
-        cl.start();
-        sv.start();
+        cl.run();
+        sv.run();
 
     }
 }

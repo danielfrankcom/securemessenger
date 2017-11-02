@@ -15,9 +15,8 @@ import javax.crypto.spec.SecretKeySpec;
 * Initialize communication with the server
 * Send messages to server and receive messages from server
 */
-class Client implements Runnable{
+class Client{
 
-    private Thread t;
     private Server sv;
     private Cipher cipher;
 
@@ -52,18 +51,6 @@ class Client implements Runnable{
         System.out.println("Encrypted: " + getMessage()); //get message
 
         System.out.println("Client exiting");
-    }
-    
-    /*
-    * Create a thread to run
-    * @return      void
-    */
-    public void start (){
-        System.out.println("Client starting");
-        if (t == null) {
-            t = new Thread (this, "client");
-            t.start ();
-        }
     }
 
     /*

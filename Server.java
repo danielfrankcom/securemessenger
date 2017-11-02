@@ -17,8 +17,7 @@ import javax.crypto.interfaces.DHPublicKey;
 * Wait for initialization from client
 * Receive messages from client and send messages to client
 */
-class Server implements Runnable {
-   private Thread t;
+class Server {
    private Client cl;
    private Cipher cipher;
 
@@ -53,18 +52,6 @@ class Server implements Runnable {
         sendMessage("secret message goes here"); //send message
 
         System.out.println("Server exiting");
-    }
-
-    /*
-    * Create a thread to run
-    * @return      void
-    */
-    public void start (){
-        System.out.println("Server starting");
-        if (t == null) {
-            t = new Thread (this, "server");
-            t.start ();
-        }
     }
 
     /*
