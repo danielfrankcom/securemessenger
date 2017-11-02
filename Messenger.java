@@ -31,9 +31,15 @@ class Messenger implements CommunicationInterface{
     /*
     * Initialize the thread
     **/
-    Messenger() throws Exception {
+    Messenger() throws Exception{
         System.out.println("Server initializing");
-        registry = LocateRegistry.getRegistry();
+        try{
+            registry = LocateRegistry.createRegistry(1099);
+        }catch(java.rmi.server.ExportException e){
+            registry = LocateRegistry.getRegistry();
+            System.out.println("located");
+        }
+        
     }
 
     /*
@@ -74,7 +80,7 @@ class Messenger implements CommunicationInterface{
         }
 
         System.out.println(id);
-        CommunicationInterface stub = (CommunicationInterface) UnicastRemoteObject.exportObject(self, 0); 
+        CommunicationInterface stub = (CommunicationInterface) UnicastRemoteObject.exportObject(self, 0);
         registry.bind(id, stub);
 
         Scanner scanner = new Scanner(System.in);
