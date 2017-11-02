@@ -54,18 +54,7 @@ class Server implements CommunicationInterface{
 
         generateKey(getSharedSecret()); //using diffie-hellman
 
-        sendMessage("secret message goes here"); //send message
-
         System.out.println("Server exiting");
-    }
-
-    /*
-    * Override communication method print()
-    * @return      void
-    */
-    public String print(){
-        System.out.println("This was successfully printed by the client");
-        return "secret text";
     }
 
     /*
@@ -131,31 +120,13 @@ class Server implements CommunicationInterface{
     }
 
     /*
-    * Wait for message in queue and decrypt
-    * @return      String message
-    */
-    private String getMessage(){
-        try{          
-            String message = new String(cipher.doFinal(queue.take())); //get from queue and decrypt message
-            return message;
-        }catch(Exception e){
-            System.out.println("Exception caught: " + e.getCause().getMessage());
-        }
-        return null;
-    }
-
-    /*
     * Send message to client message queue
     * @param       String message
-    * @return      void
+    * @return      Boolean success
     */
-    private void sendMessage(String message){
-        try{          
-            byte[] ciphertext = cipher.doFinal(message.getBytes()); //encrypt message
-            cl.queue.put(ciphertext); //put message in client message queue
-        }catch(Exception e){
-            System.out.println("Exception caught: " + e.getCause().getMessage());
-        }
+    public Boolean message(String msg){
+        System.out.println(msg);
+        return true;
     }
 
     /*
@@ -164,12 +135,14 @@ class Server implements CommunicationInterface{
     */
     public static void main(String[] args) throws Exception{
         System.out.println("server");
-        Server sv = new Server(); 
+        Server sv = new Server();
          
         CommunicationInterface stub = (CommunicationInterface) UnicastRemoteObject.exportObject(sv, 0);   
         Registry registry = LocateRegistry.getRegistry(); 
+        registry.bind("Server", stub);
         
-        registry.bind("Server", stub);  
+        sv.message("server to server");
+        
     }
 
 }
