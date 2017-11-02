@@ -54,6 +54,10 @@ class Server implements CommunicationInterface{
         System.out.println("Server exiting");
     }
 
+    /*
+    * Override communication method print()
+    * @return      void
+    */
     public void print(){
         System.out.println("This was successfully printed by the client");
     }
