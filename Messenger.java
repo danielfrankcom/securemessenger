@@ -16,6 +16,7 @@ import java.rmi.registry.Registry;
 import java.rmi.registry.LocateRegistry; 
 import java.rmi.RemoteException; 
 import java.rmi.server.UnicastRemoteObject; 
+import java.util.UUID;
 
 /*
 * Server portion of the client/server communication
@@ -23,7 +24,8 @@ import java.rmi.server.UnicastRemoteObject;
 * Receive messages from client and send messages to client
 */
 class Messenger implements CommunicationInterface{
-   private Client cl;
+    
+    /*
    private Cipher cipher;
 
    public BlockingQueue<byte[]> queue = new LinkedBlockingQueue<byte[]>(); //store messages from client
@@ -32,15 +34,16 @@ class Messenger implements CommunicationInterface{
    
     /*
     * Initialize the thread
-    */
-    Server() {
+    **/
+    Messenger() {
         System.out.println("Server initializing");
     }
     
     /*
+    /*
     * Locally assign the client thread
     * @return      void
-    */
+    *
     public void assign(Client client){
         cl = client;
     }
@@ -48,7 +51,7 @@ class Messenger implements CommunicationInterface{
     /*
     * Run the thread code
     * @return      void
-    */
+    *
     public void run(){
         System.out.println("Server running");
 
@@ -60,7 +63,7 @@ class Messenger implements CommunicationInterface{
     /*
     * Get a shared secret between client and server
     * @return      byte[] shared secret
-    */
+    *
     private byte[] getSharedSecret(){
         try{
 
@@ -98,11 +101,11 @@ class Messenger implements CommunicationInterface{
         return null;
     }
 
-    /*
+    *
     * Use shared secret to make a shared key
     * @param       byte[] sharedSecret
     * @return      void
-    */
+    *
     private void generateKey(byte[] sharedSecret){
         try{
 
@@ -118,6 +121,7 @@ class Messenger implements CommunicationInterface{
             System.out.println("Exception caught.");
         }
     }
+    */
 
     /*
     * Send message to client message queue
@@ -136,16 +140,31 @@ class Messenger implements CommunicationInterface{
     public static void main(String[] args) throws Exception{
         
         System.out.println("running");
-        Client cl = new Client();
-         
-        CommunicationInterface stub = (CommunicationInterface) UnicastRemoteObject.exportObject(cl, 0);   
-        Registry registry = LocateRegistry.getRegistry(); 
-        String id = UUID.randomUUID().toString();
+        Messenger self = new Messenger();
+
+        Boolean isServer = false;
+        String id;
+
+        if(args.length > 0){
+            if(args[0].equals("server")){
+                isServer = true;
+            }
+            id = args[0];          
+        }else{
+            id = UUID.randomUUID().toString();
+        }
+
+        System.out.println(id);
+        CommunicationInterface stub = (CommunicationInterface) UnicastRemoteObject.exportObject(self, 0); 
+        Registry registry = LocateRegistry.getRegistry();
         registry.bind(id, stub);
-        
-        stub.init(id); //this will return a session key or generate one with diffie-hellman
-        stub.message(id, msg); //msg will be encrypted in future
-        cl.message("client to client");
+
+        if(!isServer){
+            CommunicationInterface server = (CommunicationInterface) registry.lookup("server"); 
+            server.message("client to server"); //msg will be encrypted in future
+        }else{
+            self.message("server to server");
+        }
         
     }
 
