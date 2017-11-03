@@ -68,15 +68,6 @@ class Messenger implements CommunicationInterface{
     }
 
     /*
-    * Store receiver of message in comm[]
-    * @param       CommunicationInterface sender
-    * @return      void
-    */
-    public void commAdd(CommunicationInterface receiver){
-        comm.add(receiver);
-    }
-
-    /*
     * Main method used to run the class
     * @return      void
     */
@@ -108,17 +99,21 @@ class Messenger implements CommunicationInterface{
                 resp = scanner.nextLine();
                 CommunicationInterface receiver = (CommunicationInterface) registry.lookup(resp);
                 receiver.init(id);
-                self.commAdd(receiver);
+                self.comm.add(receiver);
                 receiver.message("sender to receiver");
                 valid = true;
             }else if(resp.equals("l")){
                 valid = true;
-                while(true){
-                    System.out.print("> ");
-                    resp = scanner.nextLine();
-                }
             }else{
                 System.out.println("Please type 'c' or 'l'.");
+            }
+        }
+
+        while(true){
+            System.out.print("> ");
+            String resp = scanner.nextLine();
+            for(int i = 0; i < self.comm.size(); i++){
+                self.comm.get(i).message(resp);
             }
         }
         
