@@ -28,7 +28,7 @@ import java.util.UUID;
 class Messenger implements CommunicationInterface{
 
     private static Registry registry;
-    private ArrayList<CommunicationInterface> comm;
+    private ArrayList<CommunicationInterface> comm; //who are we currently communicating with
     
     /*
     * Initialize the thread
@@ -68,6 +68,15 @@ class Messenger implements CommunicationInterface{
     }
 
     /*
+    * Store receiver of message in comm[]
+    * @param       CommunicationInterface sender
+    * @return      void
+    */
+    public void commAdd(CommunicationInterface receiver){
+        comm.add(receiver);
+    }
+
+    /*
     * Main method used to run the class
     * @return      void
     */
@@ -99,11 +108,15 @@ class Messenger implements CommunicationInterface{
                 resp = scanner.nextLine();
                 CommunicationInterface receiver = (CommunicationInterface) registry.lookup(resp);
                 receiver.init(id);
+                self.commAdd(receiver);
                 receiver.message("sender to receiver");
                 valid = true;
             }else if(resp.equals("l")){
-                
                 valid = true;
+                while(true){
+                    System.out.print("> ");
+                    resp = scanner.nextLine();
+                }
             }else{
                 System.out.println("Please type 'c' or 'l'.");
             }
