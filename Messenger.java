@@ -16,6 +16,7 @@ import java.rmi.registry.Registry;
 import java.rmi.registry.LocateRegistry; 
 import java.rmi.RemoteException; 
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.UUID;
 
@@ -27,12 +28,14 @@ import java.util.UUID;
 class Messenger implements CommunicationInterface{
 
     private static Registry registry;
+    private ArrayList<CommunicationInterface> comm;
     
     /*
     * Initialize the thread
     **/
     Messenger() throws Exception{
         System.out.println("Server initializing");
+        comm = new ArrayList<>();
         try{
             registry = LocateRegistry.createRegistry(1099);
         }catch(java.rmi.server.ExportException e){
@@ -61,6 +64,7 @@ class Messenger implements CommunicationInterface{
     public void init(String id) throws Exception{
         CommunicationInterface sender = (CommunicationInterface) registry.lookup(id); 
         sender.message("receiver to sender"); //msg will be encrypted in future
+        comm.add(sender);
     }
 
     /*
@@ -98,7 +102,7 @@ class Messenger implements CommunicationInterface{
                 receiver.message("sender to receiver");
                 valid = true;
             }else if(resp.equals("l")){
-
+                
                 valid = true;
             }else{
                 System.out.println("Please type 'c' or 'l'.");
