@@ -21,26 +21,33 @@ public class GUI extends Application{
         stage.setScene(scene);
         stage.setTitle("Secure Messenger");
         stage.show();
-        controller.setText("text");
 
     }
 
-    public static Controller getInstance() {
+    public static Controller getInstance(){ //starts the GUI and returns the controller
+
         new Thread("gui"){
             public void run(){
                 Application.launch(GUI.class);
             }
         }.start();
         try{
-            Thread.sleep(1000);
-        }catch(Exception e){
+            Boolean init = false;
+            while(!init){
 
+                try{ //not very elegant but under a time crunch so good for now
+                    controller.setText("");
+                    init = true;
+                }catch(NullPointerException e){
+                    Thread.sleep(100);
+                }
+
+            }
+        }catch(Exception e){
+            //we should deal with this later
         }
         return controller;
-    }
 
-    public static void main(String[] args){
-        Application.launch(args);
     }
 
 } 
