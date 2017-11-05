@@ -144,6 +144,8 @@ class Messenger implements CommunicationInterface{
 
         CommunicationInterface stub = (CommunicationInterface) UnicastRemoteObject.exportObject(self, 0); //create RMI compatible stub
         registry.bind(self.getID(), stub); //put self in RMI
+
+        cont.addText("Type ':q' to quit or ':connect <id>' to connect to another Messenger.\n");
         
     }
 
