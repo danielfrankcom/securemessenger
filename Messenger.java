@@ -122,7 +122,7 @@ class Messenger implements CommunicationInterface{
 
         CommunicationInterface sender = (CommunicationInterface) registry.lookup(other); //get from RMI
         comm.add(sender); //add sender to our comm array
-        cont.addText("connected to: " + other + "\n"); //display connection status for user
+        cont.addText("[Connected to: " + other + "]\n"); //display connection status for user
 
     }
 
@@ -142,10 +142,13 @@ class Messenger implements CommunicationInterface{
             self.setID(UUID.randomUUID().toString()); //generate random id if not custom
         }
 
-        CommunicationInterface stub = (CommunicationInterface) UnicastRemoteObject.exportObject(self, 0); //create RMI compatible stub
-        registry.bind(self.getID(), stub); //put self in RMI
+        String id = self.getID(); //get instance id
 
-        cont.addText("Type ':q' to quit or ':connect <id>' to connect to another Messenger.\n");
+        CommunicationInterface stub = (CommunicationInterface) UnicastRemoteObject.exportObject(self, 0); //create RMI compatible stub
+        registry.bind(id, stub); //put self in RMI
+
+        cont.addText("[Your id is: " + id + "]\n");
+        cont.addText("[Type ':q' to quit or ':connect <id>' to connect to another messenger.]\n");
         
     }
 
