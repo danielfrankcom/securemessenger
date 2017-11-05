@@ -33,6 +33,7 @@ class Messenger implements CommunicationInterface{
     private static Registry registry;
     private ArrayList<CommunicationInterface> comm; //who are we currently communicating with
     private static Controller cont; //GUI controller
+    private static String id;
       
     /*
     * Initialize the thread
@@ -48,18 +49,27 @@ class Messenger implements CommunicationInterface{
         }
     }
 
+    public String getID(){
+        return id;
+    }
+
+    public void setID(String in){
+        id = in;
+    }
+
+
     /*
     * Send message to receiver
     * @param       String message
     * @return      Boolean success
     */
     public Boolean message(String msg) throws Exception{
-        cont.addText("Other: " + msg + "\n");
+        cont.addText(comm.get(0).getID() + ": " + msg + "\n"); //this needs to be expanded later for more connections
         return true;
     }
 
     public void typed(String msg) throws Exception{
-        cont.addText("Me: " + msg + "\n");
+        cont.addText("you: " + msg + "\n");
         for(int i = 0; i < comm.size(); i++){
             comm.get(i).message(msg);
         }
@@ -71,10 +81,10 @@ class Messenger implements CommunicationInterface{
     * @param       String sender id
     * @return      void
     */
-    public void init(String id) throws Exception{
-        CommunicationInterface sender = (CommunicationInterface) registry.lookup(id); 
-        sender.message("receiver to sender"); //msg will be encrypted in future
+    public void init(String other) throws Exception{
+        CommunicationInterface sender = (CommunicationInterface) registry.lookup(other); 
         comm.add(sender);
+        cont.addText("connected to: " + other + "\n"); //msg will be encrypted in future
     }
 
     /*
@@ -87,15 +97,14 @@ class Messenger implements CommunicationInterface{
 
         cont = new GUI().getInstance(self);
 
-        String id;
-
         if(args.length > 0){
-            id = args[0];          
+            self.setID(args[0]);          
         }else{
-            id = UUID.randomUUID().toString();
+            self.setID(UUID.randomUUID().toString());
         }
 
-        System.out.println(id);
+        String id = self.getID();
+
         CommunicationInterface stub = (CommunicationInterface) UnicastRemoteObject.exportObject(self, 0);
         registry.bind(id, stub);
 
@@ -112,7 +121,7 @@ class Messenger implements CommunicationInterface{
                 CommunicationInterface receiver = (CommunicationInterface) registry.lookup(resp);
                 receiver.init(id);
                 self.comm.add(receiver);
-                receiver.message("sender to receiver");
+                self.cont.addText("Connected to: " + resp + "\n");
                 valid = true;
             }else if(resp.equals("l")){
                 valid = true;
@@ -120,14 +129,6 @@ class Messenger implements CommunicationInterface{
                 System.out.println("Please type 'c' or 'l'.");
             }
         }
-
-        /*while(true){
-            System.out.print("> ");
-            String resp = scanner.nextLine();
-            for(int i = 0; i < self.comm.size(); i++){
-                self.comm.get(i).message(resp);
-            }
-        }*/
         
     }
 
