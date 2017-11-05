@@ -7,7 +7,7 @@ import javafx.stage.Stage;
  
 public class GUI extends Application{ 
 
-    private Controller controller;
+    private static Controller controller;
 
     @Override
     public void start(Stage stage) throws Exception{
@@ -23,10 +23,20 @@ public class GUI extends Application{
         stage.show();
         controller.setText("text");
 
-    }  
+    }
 
-    public GUI(){
-        //launch(); //not sure if we can make this work just yet
+    public static Controller getInstance() {
+        new Thread("gui"){
+            public void run(){
+                Application.launch(GUI.class);
+            }
+        }.start();
+        try{
+            Thread.sleep(1000);
+        }catch(Exception e){
+
+        }
+        return controller;
     }
 
     public static void main(String[] args){

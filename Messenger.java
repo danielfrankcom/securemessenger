@@ -76,13 +76,9 @@ class Messenger implements CommunicationInterface{
     */
     public static void main(String[] args) throws Exception{
 
-        new Thread("gui"){
-            public void run(){
-                Application.launch(GUI.class);
-            }
-        }.start();
+        Controller cont = new GUI().getInstance();
+        cont.setText("test if this works");
 
-        System.out.println("about to self");
         Messenger self = new Messenger();
         String id;
 
