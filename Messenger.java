@@ -134,8 +134,6 @@ class Messenger implements CommunicationInterface{
 
         Messenger self = new Messenger(); //create a Messenger object
 
-        cont = GUI.getInstance(self); //start the GUI and get the controller
-
         if(args.length > 0){
             self.setID(args[0]); //set id if custom
         }else{
@@ -143,6 +141,8 @@ class Messenger implements CommunicationInterface{
         }
 
         String id = self.getID(); //get instance id
+
+        cont = GUI.getInstance(self, "Secure Messenger ("+ id + ")"); //start the GUI and get the controller
 
         CommunicationInterface stub = (CommunicationInterface) UnicastRemoteObject.exportObject(self, 0); //create RMI compatible stub
         registry.bind(id, stub); //put self in RMI

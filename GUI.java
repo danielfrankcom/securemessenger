@@ -12,6 +12,7 @@ import javafx.stage.Stage;
 public class GUI extends Application{ 
 
     private static Controller controller; //stores controller (only accessible when start method runs)
+    private static String id; //stores Messenger id
 
     /*
     * Necessary method that runs when GUI is initialized
@@ -29,7 +30,7 @@ public class GUI extends Application{
     
         Scene scene = new Scene(root);
         stage.setScene(scene);
-        stage.setTitle("Secure Messenger");
+        stage.setTitle(id); //id from Messenger
         stage.show(); //show GUI
 
     }
@@ -46,9 +47,12 @@ public class GUI extends Application{
     /*
     * For use by Messenger class, shares objects between messenger/controller
     * @param       Messenger mes (owner, to be passed along to controller)
+    * @param       String id (for title bar)
     * @return      Controller (to be passed to owner to allow direct access to controller)
     */
-    public static Controller getInstance(Messenger mes){ //starts the GUI and returns the controller
+    public static Controller getInstance(Messenger mes, String localID){ //starts the GUI and returns the controller
+
+        id = localID; //set instance variable
 
         new Thread("gui"){ //create a thread as run() only ends when GUI quits
             public void run(){
