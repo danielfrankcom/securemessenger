@@ -24,7 +24,7 @@ public class GUI extends Application{
 
     }
 
-    public static Controller getInstance(){ //starts the GUI and returns the controller
+    public static Controller getInstance(Messenger mes){ //starts the GUI and returns the controller
 
         new Thread("gui"){
             public void run(){
@@ -43,6 +43,7 @@ public class GUI extends Application{
                 }
 
             }
+            controller.setMessenger(mes);
         }catch(Exception e){
             //we should deal with this later
         }

@@ -8,8 +8,7 @@
 
 <AnchorPane id="AnchorPane" fx:id="anchor" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="Controller">
   <children>
-    <TextField layoutX="14.0" layoutY="358.0" prefHeight="30.0" prefWidth="572.0" promptText="" text="" />
+    <TextField fx:id="input" layoutX="14.0" layoutY="358.0" onAction="#onEnter" prefHeight="30.0" prefWidth="572.0" promptText="" text="" />
     <TextArea fx:id="messages" editable="false" layoutX="14.0" layoutY="14.0" prefHeight="334.0" prefWidth="572.0" text="" wrapText="true" />
-    <VBox layoutX="137.0" layoutY="68.0" prefHeight="200.0" prefWidth="361.0" />
   </children>
 </AnchorPane>

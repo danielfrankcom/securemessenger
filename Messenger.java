@@ -77,12 +77,10 @@ class Messenger implements CommunicationInterface{
     */
     public static void main(String[] args) throws Exception{
 
-        cont = new GUI().getInstance();
-        for (int i = 0; i < 50; i++){
-            cont.addText("    Field "+i+"\n");
-        }
-
         Messenger self = new Messenger();
+
+        cont = new GUI().getInstance(self);
+
         String id;
 
         if(args.length > 0){
