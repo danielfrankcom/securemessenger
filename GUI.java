@@ -35,6 +35,15 @@ public class GUI extends Application{
     }
 
     /*
+    * Gracefully handle exit other than by command
+    * @return      void
+    */
+    @Override //called by JavaFX when application closed
+    public void stop(){
+        System.exit(0); //stop all threads including connection listener and RMI
+    }
+
+    /*
     * For use by Messenger class, shares objects between messenger/controller
     * @param       Messenger mes (owner, to be passed along to controller)
     * @return      Controller (to be passed to owner to allow direct access to controller)
