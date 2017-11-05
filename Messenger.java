@@ -9,6 +9,9 @@ import java.security.spec.X509EncodedKeySpec;
 import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
 import javax.crypto.spec.SecretKeySpec;
+
+import javafx.application.Application;
+
 import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.interfaces.DHPublicKey;
 
@@ -73,8 +76,12 @@ class Messenger implements CommunicationInterface{
     */
     public static void main(String[] args) throws Exception{
 
-        GUI g = new GUI();
-        
+        new Thread("gui"){
+            public void run(){
+                Application.launch(GUI.class);
+            }
+        }.start();
+
         System.out.println("about to self");
         Messenger self = new Messenger();
         String id;
