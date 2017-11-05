@@ -9,9 +9,6 @@ import java.security.spec.X509EncodedKeySpec;
 import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
 import javax.crypto.spec.SecretKeySpec;
-
-import javafx.application.Application;
-
 import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.interfaces.DHPublicKey;
 
@@ -24,80 +21,109 @@ import java.util.Scanner;
 import java.util.UUID;
 
 /*
-* Server portion of the client/server communication
-* Wait for initialization from client
-* Receive messages from client and send messages to client
+* Entry point for peer-to-peer communication
+* Can wait for connection or initialize a connection
+* Receives messages from connected Messengers or can send messages
 */
 class Messenger implements CommunicationInterface{
 
-    private static Registry registry;
+    private static Registry registry; //the registry that stores other Messengers
     private ArrayList<CommunicationInterface> comm; //who are we currently communicating with
     private static Controller cont; //GUI controller
-    private static String id;
+    private static String id; //the id of our Messenger
       
     /*
-    * Initialize the thread
-    **/
+    * Initialize the Messenger
+    */
     Messenger() throws Exception{
-        System.out.println("Server initializing");
-        comm = new ArrayList<>();
+
+        comm = new ArrayList<>(); //initialize instance variable
+
         try{
-            registry = LocateRegistry.createRegistry(1099);
-        }catch(java.rmi.server.ExportException e){
-            registry = LocateRegistry.getRegistry();
-            System.out.println("located");
+            registry = LocateRegistry.createRegistry(1099); //try to create registry
+        }catch(java.rmi.server.ExportException e){ //if caught, then server already running
+            registry = LocateRegistry.getRegistry(); //instead, connect to existing one
         }
+
     }
 
+    /*
+    * Allows other instances to access our ID
+    * @return      String id
+    */
     public String getID(){
         return id;
     }
 
-    public void setID(String in){
-        id = in;
+    /*
+    * Allows main() to set our instance ID
+    * @param      String id
+    * @return     void
+    */
+    public void setID(String newID){
+        id = newID;
     }
-
 
     /*
-    * Send message to receiver
+    * Receive a message from an external object
     * @param       String message
-    * @return      Boolean success
+    * @return      void
     */
-    public Boolean message(String msg) throws Exception{
-        cont.addText(comm.get(0).getID() + ": " + msg + "\n"); //this needs to be expanded later for more connections
-        return true;
+    public void message(String msg) throws Exception{
+        cont.addText(comm.get(0).getID() + ": " + msg + "\n");
+        //this needs to be expanded later for more connections
+        //currently it assumes all messages are from the 1st connection
     }
 
+    /*
+    * Sent from controller, user has typed a message to send
+    * @param       String message
+    * @return      void
+    */
     public void typed(String msg) throws Exception{
-        cont.addText("you: " + msg + "\n");
-        for(int i = 0; i < comm.size(); i++){
+
+        cont.addText("you: " + msg + "\n"); //display the message for the user
+
+        for(int i = 0; i < comm.size(); i++){ //sends message to all connections
             comm.get(i).message(msg);
         }
-    }
 
-    public void command(String msg) throws Exception{
-        System.out.println(msg);
-        if(msg.equals("exit") || msg.equals("quit") || msg.equals("q")){
-            System.exit(0);
-        }else if(msg.contains("connect")){
-            String temp[] = msg.split(" ");
-            CommunicationInterface receiver = (CommunicationInterface) registry.lookup(temp[1]);
-            receiver.init(id);
-            comm.add(receiver);
-            cont.addText("Connected to: " + temp[1] + "\n");
-        }
     }
 
     /*
-    * Look up sender in registry
+    * Sent from controller, user has typed a command to run
+    * @param       String command
+    * @return      void
+    */
+    public void command(String msg) throws Exception{
+
+        if(msg.equals("exit") || msg.equals("quit") || msg.equals("q")){ //if user wants to quit
+
+            System.exit(0); //quit all threads (close application)
+
+        }else if(msg.contains("connect")){ //if user wants to make a connection
+
+            String temp[] = msg.split(" "); //access the desired connection id
+            CommunicationInterface receiver = (CommunicationInterface) registry.lookup(temp[1]); //get from RMI
+            receiver.init(id); //initialize communication (add us to receiver's comm array)
+            comm.add(receiver); //add to our own
+            cont.addText("Connected to: " + temp[1] + "\n"); //display connection status for user
+
+        }
+
+    }
+
+    /*
     * Initialize communication with sender
-    * @param       String sender id
+    * @param       String senderID
     * @return      void
     */
     public void init(String other) throws Exception{
-        CommunicationInterface sender = (CommunicationInterface) registry.lookup(other); 
-        comm.add(sender);
-        cont.addText("connected to: " + other + "\n"); //msg will be encrypted in future
+
+        CommunicationInterface sender = (CommunicationInterface) registry.lookup(other); //get from RMI
+        comm.add(sender); //add sender to our comm array
+        cont.addText("connected to: " + other + "\n"); //display connection status for user
+
     }
 
     /*
@@ -106,20 +132,18 @@ class Messenger implements CommunicationInterface{
     */
     public static void main(String[] args) throws Exception{
 
-        Messenger self = new Messenger();
+        Messenger self = new Messenger(); //create a Messenger object
 
-        cont = new GUI().getInstance(self);
+        cont = GUI.getInstance(self); //start the GUI and get the controller
 
         if(args.length > 0){
-            self.setID(args[0]);          
+            self.setID(args[0]); //set id if custom
         }else{
-            self.setID(UUID.randomUUID().toString());
+            self.setID(UUID.randomUUID().toString()); //generate random id if not custom
         }
 
-        String id = self.getID();
-
-        CommunicationInterface stub = (CommunicationInterface) UnicastRemoteObject.exportObject(self, 0);
-        registry.bind(id, stub);
+        CommunicationInterface stub = (CommunicationInterface) UnicastRemoteObject.exportObject(self, 0); //create RMI compatible stub
+        registry.bind(self.getID(), stub); //put self in RMI
         
     }
 
