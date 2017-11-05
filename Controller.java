@@ -30,7 +30,11 @@ public class Controller implements Initializable{
     public void onEnter(ActionEvent a) throws Exception{
         String msg = input.getText();
         input.clear();
-        messenger.typed(msg);
+        if(msg.charAt(0) == ':'){
+            messenger.command(msg.substring(1));
+        }else{
+            messenger.typed(msg);
+        }
     }
 
 }

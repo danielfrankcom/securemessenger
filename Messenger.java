@@ -75,6 +75,19 @@ class Messenger implements CommunicationInterface{
         }
     }
 
+    public void command(String msg) throws Exception{
+        System.out.println(msg);
+        if(msg.equals("exit") || msg.equals("quit") || msg.equals("q")){
+            System.exit(0);
+        }else if(msg.contains("connect")){
+            String temp[] = msg.split(" ");
+            CommunicationInterface receiver = (CommunicationInterface) registry.lookup(temp[1]);
+            receiver.init(id);
+            comm.add(receiver);
+            cont.addText("Connected to: " + temp[1] + "\n");
+        }
+    }
+
     /*
     * Look up sender in registry
     * Initialize communication with sender
@@ -107,28 +120,6 @@ class Messenger implements CommunicationInterface{
 
         CommunicationInterface stub = (CommunicationInterface) UnicastRemoteObject.exportObject(self, 0);
         registry.bind(id, stub);
-
-        Scanner scanner = new Scanner(System.in);
-
-        Boolean valid = false;
-        while(!valid){
-            System.out.print("Would you like to connect (c) or listen for connections (l)? ");
-            String resp = scanner.nextLine();
-
-            if(resp.equals("c")){
-                System.out.print("Enter id: ");
-                resp = scanner.nextLine();
-                CommunicationInterface receiver = (CommunicationInterface) registry.lookup(resp);
-                receiver.init(id);
-                self.comm.add(receiver);
-                self.cont.addText("Connected to: " + resp + "\n");
-                valid = true;
-            }else if(resp.equals("l")){
-                valid = true;
-            }else{
-                System.out.println("Please type 'c' or 'l'.");
-            }
-        }
         
     }
 
