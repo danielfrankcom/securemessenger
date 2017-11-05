@@ -30,7 +30,7 @@ public class Controller implements Initializable{
     public void onEnter(ActionEvent a) throws Exception{
         String msg = input.getText();
         input.clear();
-        messenger.message(msg);
+        messenger.typed(msg);
     }
 
 }

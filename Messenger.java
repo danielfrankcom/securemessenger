@@ -54,9 +54,15 @@ class Messenger implements CommunicationInterface{
     * @return      Boolean success
     */
     public Boolean message(String msg) throws Exception{
-        System.out.println(msg);
-        cont.addText(msg + "\n");
+        cont.addText("Other: " + msg + "\n");
         return true;
+    }
+
+    public void typed(String msg) throws Exception{
+        cont.addText("Me: " + msg + "\n");
+        for(int i = 0; i < comm.size(); i++){
+            comm.get(i).message(msg);
+        }
     }
 
     /*
@@ -115,13 +121,13 @@ class Messenger implements CommunicationInterface{
             }
         }
 
-        while(true){
+        /*while(true){
             System.out.print("> ");
             String resp = scanner.nextLine();
             for(int i = 0; i < self.comm.size(); i++){
                 self.comm.get(i).message(resp);
             }
-        }
+        }*/
         
     }
 
