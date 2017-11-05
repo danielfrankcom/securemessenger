@@ -32,6 +32,7 @@ class Messenger implements CommunicationInterface{
 
     private static Registry registry;
     private ArrayList<CommunicationInterface> comm; //who are we currently communicating with
+    private static Controller cont; //GUI controller
       
     /*
     * Initialize the thread
@@ -54,7 +55,7 @@ class Messenger implements CommunicationInterface{
     */
     public Boolean message(String msg) throws Exception{
         System.out.println(msg);
-        //g.setText(msg);
+        cont.addText(msg + "\n");
         return true;
     }
 
@@ -76,8 +77,10 @@ class Messenger implements CommunicationInterface{
     */
     public static void main(String[] args) throws Exception{
 
-        Controller cont = new GUI().getInstance();
-        cont.setText("test if this works");
+        cont = new GUI().getInstance();
+        for (int i = 0; i < 50; i++){
+            cont.addText("    Field "+i+"\n");
+        }
 
         Messenger self = new Messenger();
         String id;

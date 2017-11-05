@@ -36,7 +36,7 @@ public class GUI extends Application{
             while(!init){
 
                 try{ //not very elegant but under a time crunch so good for now
-                    controller.setText("");
+                    controller.addText("");
                     init = true;
                 }catch(NullPointerException e){
                     Thread.sleep(100);

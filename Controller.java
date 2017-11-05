@@ -13,8 +13,8 @@ public class Controller implements Initializable{
         //runs when the application starts    
     }
 
-    public void setText(String text){ //for use outside of controller
-        messages.setText(text);
+    public void addText(String text){ //for use outside of controller
+        messages.appendText(text);
     }
 
 }
