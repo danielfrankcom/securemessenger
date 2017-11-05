@@ -9,6 +9,9 @@ import java.security.spec.X509EncodedKeySpec;
 import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
 import javax.crypto.spec.SecretKeySpec;
+
+import javafx.application.Application;
+
 import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.interfaces.DHPublicKey;
 
@@ -29,7 +32,7 @@ class Messenger implements CommunicationInterface{
 
     private static Registry registry;
     private ArrayList<CommunicationInterface> comm; //who are we currently communicating with
-    
+      
     /*
     * Initialize the thread
     **/
@@ -42,6 +45,11 @@ class Messenger implements CommunicationInterface{
             registry = LocateRegistry.getRegistry();
             System.out.println("located");
         }
+        //Application.launch(new GUI());
+        //g.launch();
+        //System.out.println("runs");
+        GUI g = new GUI();
+        //g.setText("here");
         
     }
 
@@ -50,8 +58,9 @@ class Messenger implements CommunicationInterface{
     * @param       String message
     * @return      Boolean success
     */
-    public Boolean message(String msg){
+    public Boolean message(String msg) throws Exception{
         System.out.println(msg);
+        //g.setText(msg);
         return true;
     }
 
@@ -73,7 +82,7 @@ class Messenger implements CommunicationInterface{
     */
     public static void main(String[] args) throws Exception{
         
-        System.out.println("running");
+        System.out.println("about to self");
         Messenger self = new Messenger();
         String id;
 
