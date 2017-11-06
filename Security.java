@@ -37,9 +37,9 @@ class Security{
         //generateKey(getSharedSecret()); //using diffie-hellman
     }
         
-    public PrivateKey getPrivate() throws Exception {
+    private PrivateKey getPrivate() throws Exception {
   
-        byte[] keyBytes = Files.readAllBytes(Paths.get(id + "-private/private.der"));
+        byte[] keyBytes = Files.readAllBytes(Paths.get("keys/private-" + id + "/private.der"));
         PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
         KeyFactory kf = KeyFactory.getInstance("RSA");
 
@@ -47,9 +47,9 @@ class Security{
 
     }
 
-    public static PublicKey get(String messenger) throws Exception {
+    private PublicKey getPublic(String messenger) throws Exception {
 
-        byte[] keyBytes = Files.readAllBytes(Paths.get("public/" + messenger + ".der"));
+        byte[] keyBytes = Files.readAllBytes(Paths.get("keys/public/" + messenger + ".der"));
         X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
         KeyFactory kf = KeyFactory.getInstance("RSA");
 
