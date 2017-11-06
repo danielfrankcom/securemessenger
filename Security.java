@@ -140,8 +140,7 @@ class Security{
 
     }
 
-
-    String message = new String(cipher.doFinal(queue.take())); //decrypt
-    byte[] ciphertext = cipher.doFinal(message.getBytes()); //encrypt message
+    //String message = new String(cipher.doFinal(queue.take())); //decrypt
+    //byte[] ciphertext = cipher.doFinal(message.getBytes()); //encrypt message
 
 }
