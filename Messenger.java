@@ -31,6 +31,12 @@ class Messenger implements CommunicationInterface{
     private ArrayList<CommunicationInterface> comm; //who are we currently communicating with
     private static Controller cont; //GUI controller
     private static String id; //the id of our Messenger
+
+    private Boolean[] flags; //this will store the 3 security flags
+    //Let's set it manually for now and we can figure out how to modify later
+    //[0] - confidentiality
+    //[1] - integrity
+    //[2] - authentication
       
     /*
     * Initialize the Messenger
