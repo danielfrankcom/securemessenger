@@ -13,7 +13,8 @@ import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.interfaces.DHPublicKey;
 
 import java.io.*;
-import java.nio.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.*;
 import java.security.spec.*;
 
@@ -33,7 +34,7 @@ class Security{
     */
     public Security(String parentID) throws Exception{
         id = parentID;
-        generateKey(getSharedSecret()); //using diffie-hellman
+        //generateKey(getSharedSecret()); //using diffie-hellman
     }
         
     public PrivateKey getPrivate() throws Exception {
@@ -58,7 +59,7 @@ class Security{
     /*
     * Get a shared secret between client and server
     * @return      byte[] shared secret
-    */
+    *
     private byte[] getSharedSecret(){
         try{ //client
 
@@ -132,7 +133,7 @@ class Security{
     * Use shared secret to make a shared key
     * @param       byte[] sharedSecret
     * @return      void
-    */
+    *
     private void generateKey(byte[] sharedSecret){
 
         try{ //client
@@ -163,7 +164,7 @@ class Security{
             System.out.println("Exception caught.");
         }
 
-    }
+    }*/
 
     //String message = new String(cipher.doFinal(queue.take())); //decrypt
     //byte[] ciphertext = cipher.doFinal(message.getBytes()); //encrypt message
