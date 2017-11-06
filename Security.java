@@ -35,7 +35,7 @@ class Security{
     * @return      byte[] shared secret
     */
     private byte[] getSharedSecret(){
-        try{
+        try{ //client
 
             KeyPairGenerator kpairGen = KeyPairGenerator.getInstance("DH");
             kpairGen.initialize(2048);
@@ -66,6 +66,41 @@ class Security{
         }
 
         return null;
+
+        try{ //server
+            
+            byte[] clientPubKeyEnc = queue.take(); //wait for client to generate a public key
+
+            KeyFactory keyFac = KeyFactory.getInstance("DH");
+            X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(clientPubKeyEnc);
+            PublicKey clientPubKey = keyFac.generatePublic(x509KeySpec);
+
+            DHParameterSpec dhParamFromClientPubKey = ((DHPublicKey)clientPubKey).getParams(); //ensure params are the same for both keys
+            KeyPairGenerator kPairGen = KeyPairGenerator.getInstance("DH");
+            kPairGen.initialize(dhParamFromClientPubKey);
+            KeyPair kPair = kPairGen.generateKeyPair();
+            
+            KeyAgreement keyAgree = KeyAgreement.getInstance("DH");
+            keyAgree.init(kPair.getPrivate());
+
+            byte[] pubKeyEnc = kPair.getPublic().getEncoded();
+            cl.queue.put(pubKeyEnc); //put public key in client message queue
+            System.out.println("client sent key");
+
+            keyAgree.doPhase(clientPubKey, true);
+
+            queue.take(); //wait for client to set key length
+
+            byte[] sharedSecret = new byte[cl.len]; //store shared secret
+            len = keyAgree.generateSecret(sharedSecret, 0); //set private var
+
+            return sharedSecret;
+
+        }catch(Exception e){
+            System.out.println("Exception caught: " + e.getCause().getMessage());
+        }
+
+        return null;
     }
 
     /*
@@ -75,7 +110,7 @@ class Security{
     */
     private void generateKey(byte[] sharedSecret){
 
-        try{
+        try{ //client
 
             queue.take(); //wait for server to notify that params have been declared
 
@@ -89,7 +124,22 @@ class Security{
             System.out.println("Exception caught.");
         }
 
+        try{ //server
+            
+            SecretKeySpec aesKey = new SecretKeySpec(sharedSecret, 0, 16, "AES"); //use shared secret
+            cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, aesKey); //initialize private variable to store cipher
+
+            encodedParams = cipher.getParameters().getEncoded(); //store params to send to client          
+            cl.encodedParams = encodedParams; //share params with client
+            cl.queue.put("done".getBytes()); //notify client that params have been shared
+
+        }catch(Exception e){
+            System.out.println("Exception caught.");
+        }
+
     }
+
 
     String message = new String(cipher.doFinal(queue.take())); //decrypt
     byte[] ciphertext = cipher.doFinal(message.getBytes()); //encrypt message
