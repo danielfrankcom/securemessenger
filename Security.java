@@ -12,6 +12,11 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.interfaces.DHPublicKey;
 
+import java.io.*;
+import java.nio.*;
+import java.security.*;
+import java.security.spec.*;
+
 /*
 * Handles security related tasks on behalf of Messenger
 * Interacts with the javax.crypto and java.security libraries
@@ -19,16 +24,36 @@ import javax.crypto.interfaces.DHPublicKey;
 class Security{
 
     private Cipher cipher;
+    private String id;
     public byte[] encodedParams; //need to be the same between communicating parties
     public int len; //this is not useful, but needs to be communicated via network at one point
 
     /*
     * Initialize the class
     */
-    public Security() throws Exception{
+    public Security(String parentID) throws Exception{
+        id = parentID;
         generateKey(getSharedSecret()); //using diffie-hellman
     }
         
+    public PrivateKey getPrivate() throws Exception {
+  
+        byte[] keyBytes = Files.readAllBytes(Paths.get(id + "-private/private.der"));
+        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+
+        return kf.generatePrivate(spec);
+
+    }
+
+    public static PublicKey get(String messenger) throws Exception {
+
+        byte[] keyBytes = Files.readAllBytes(Paths.get("public/" + messenger + ".der"));
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+
+        return kf.generatePublic(spec);
+    }
 
     /*
     * Get a shared secret between client and server
