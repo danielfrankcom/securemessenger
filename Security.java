@@ -20,24 +20,30 @@ import java.security.spec.*;
 class Security{
 
     private Cipher cipher; //shared key for encryption/decryption
-    private KeyAgreement keyAgree;
-    private CommunicationInterface other;
+    private KeyAgreement keyAgree; //object for access in multiple methods
+    private CommunicationInterface other; //messenger that we are communicating with
 
-    private String id;
-    PrivateKey priv;
-    PublicKey myPub;
+    private String id; //string id of our Messenger parent
+    PrivateKey priv; //private key (not diffie-hellman)
+    PublicKey myPub; //public key (not diffie-hellman)
 
     /*
     * Initialize the class
     */
     public Security(String parentID) throws Exception{
 
-        id = parentID;
-        priv = getPrivate();
-        myPub = getPublic(id);
+        id = parentID; //set instance variable
+        priv = getPrivate(); //get from file
+        myPub = getPublic(id); //get from file
 
     }
 
+    /*
+    * First step in diffie-hellman protocol
+    * Generate public key and send to other party
+    * @param       CommunicationInterface obj (party to send to)
+    * @return      void
+    */
     public void createSharedSecret(CommunicationInterface obj) throws Exception{
 
         other = obj; //set instance var for use by other functions
@@ -46,81 +52,74 @@ class Security{
         kPairGen.initialize(2048);
         KeyPair kPair = kPairGen.generateKeyPair(); //generate diffie-hellman public/private pair
         
-        keyAgree = KeyAgreement.getInstance("DH");
+        keyAgree = KeyAgreement.getInstance("DH"); //init KeyAgreement instance for use in generating secret
         keyAgree.init(kPair.getPrivate());
 
         other.createPub(kPair.getPublic().getEncoded()); //send encoded public key to other party
 
     }
 
+    /*
+    * Second step in diffie-hellman protocol
+    * Take a public key, and generate our own
+    * Send to the other party to create a shared secret
+    * @param       byte[] otherPubEnc (other party's public key)
+    * @return      void
+    */
     public void createPub(byte[] otherPubEnc) throws Exception{
 
         KeyFactory keyFac = KeyFactory.getInstance("DH");
-        X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(otherPubEnc);
+        X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(otherPubEnc); //create a spec to determine other public key
+        PublicKey otherPub = keyFac.generatePublic(x509KeySpec); //get other public key
 
-        PublicKey otherPub = keyFac.generatePublic(x509KeySpec);
-
-        DHParameterSpec dhParam = ((DHPublicKey)otherPub).getParams();
+        DHParameterSpec dhParam = ((DHPublicKey)otherPub).getParams(); //create spec to create a similar key
 
         KeyPairGenerator kPairGen = KeyPairGenerator.getInstance("DH");
         kPairGen.initialize(dhParam);
-        KeyPair kPair = kPairGen.generateKeyPair();
+        KeyPair kPair = kPairGen.generateKeyPair(); //generate keypair based on spec
 
-        KeyAgreement keyAgree = KeyAgreement.getInstance("DH");
+        KeyAgreement keyAgree = KeyAgreement.getInstance("DH"); //does not need to be externally defined as this step is self-contained
         keyAgree.init(kPair.getPrivate());
 
         other.sharePub(kPair.getPublic().getEncoded()); //send encoded public key to other party
 
         keyAgree.doPhase(otherPub, true);
-        byte[] sharedSecret = keyAgree.generateSecret();
-        System.out.println(toHexString(sharedSecret));
+        byte[] sharedSecret = keyAgree.generateSecret(); //create diffie-hellman secret
 
-    }
-
-    public void sharePub(byte[] otherPubEnc) throws Exception{
-        
-        KeyFactory keyFac = KeyFactory.getInstance("DH");
-        X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(otherPubEnc);
-        PublicKey otherPub = keyFac.generatePublic(x509KeySpec);
-
-        keyAgree.doPhase(otherPub, true);
-        byte[] sharedSecret = keyAgree.generateSecret();
-        System.out.println(toHexString(sharedSecret));
-
-    }
-
-
-    private static void byte2hex(byte b, StringBuffer buf) {
-        char[] hexChars = { '0', '1', '2', '3', '4', '5', '6', '7', '8',
-                '9', 'A', 'B', 'C', 'D', 'E', 'F' };
-        int high = ((b & 0xf0) >> 4);
-        int low = (b & 0x0f);
-        buf.append(hexChars[high]);
-        buf.append(hexChars[low]);
     }
 
     /*
-     * Converts a byte array to hex string
-     */
-    private static String toHexString(byte[] block) {
-        StringBuffer buf = new StringBuffer();
-        int len = block.length;
-        for (int i = 0; i < len; i++) {
-            byte2hex(block[i], buf);
-            if (i < len-1) {
-                buf.append(":");
-            }
-        }
-        return buf.toString();
+    * Third step in diffie-hellman protocol
+    * @param       byte[] otherPubEnc (other party's public key)
+    * @return      void
+    */
+    public void sharePub(byte[] otherPubEnc) throws Exception{
+        
+        KeyFactory keyFac = KeyFactory.getInstance("DH");
+        X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(otherPubEnc); //create a spec to determine other public key
+        PublicKey otherPub = keyFac.generatePublic(x509KeySpec); //get other public key
+
+        keyAgree.doPhase(otherPub, true);
+        byte[] sharedSecret = keyAgree.generateSecret(); //create diffie-hellman secret
+
     }
 
-
+    /*
+    * Sent from controller, user has typed a command to run
+    * @param       String command
+    * @return      void
+    */
     public void generateCipher(){
 
         cipher = null;
 
     }
-        
+      
+    /*
+    * Sent from controller, user has typed a command to run
+    * @param       String command
+    * @return      void
+    */
     private PrivateKey getPrivate() throws Exception {
   
         byte[] keyBytes = Files.readAllBytes(Paths.get("keys/private-" + id + "/private.der"));
@@ -131,6 +130,11 @@ class Security{
 
     }
 
+    /*
+    * Sent from controller, user has typed a command to run
+    * @param       String command
+    * @return      void
+    */
     private PublicKey getPublic(String messenger) throws Exception {
 
         byte[] keyBytes = Files.readAllBytes(Paths.get("keys/public/" + messenger + ".der"));

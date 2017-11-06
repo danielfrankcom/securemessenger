@@ -57,10 +57,22 @@ class Messenger implements CommunicationInterface{
         id = newID;
     }
 
+    /*
+    * Wrapper function for Security class
+    * Allows secure pass through of security information
+    * @param       byte[] otherPub (public key)
+    * @return      void
+    */
     public void createPub(byte[] otherPub) throws Exception{
         secure.createPub(otherPub);
     }
 
+    /*
+    * Wrapper function for Security class
+    * Allows secure pass through of security information
+    * @param       byte[] otherPub (public key)
+    * @return      void
+    */
     public void sharePub(byte[] otherPub) throws Exception{
         secure.sharePub(otherPub);
     }
