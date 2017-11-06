@@ -27,7 +27,7 @@ class Messenger implements CommunicationInterface{
     /*
     * Initialize the Messenger
     */
-    Messenger() throws Exception{
+    public Messenger() throws Exception{
 
         comm = new ArrayList<>(); //initialize instance variable
 

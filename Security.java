@@ -22,7 +22,13 @@ class Security{
     public byte[] encodedParams; //need to be the same between communicating parties
     public int len; //this is not useful, but needs to be communicated via network at one point
 
-    generateKey(getSharedSecret()); //using diffie-hellman
+    /*
+    * Initialize the class
+    */
+    public Security() throws Exception{
+        generateKey(getSharedSecret()); //using diffie-hellman
+    }
+        
 
     /*
     * Get a shared secret between client and server
