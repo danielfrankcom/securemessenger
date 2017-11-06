@@ -1,16 +1,11 @@
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.security.AlgorithmParameters;
-import java.security.KeyFactory;
-import java.security.PublicKey;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.spec.X509EncodedKeySpec;
-import javax.crypto.Cipher;
-import javax.crypto.KeyAgreement;
-import javax.crypto.spec.SecretKeySpec;
-import javax.crypto.spec.DHParameterSpec;
-import javax.crypto.interfaces.DHPublicKey;
+import java.security.*;
+import java.security.spec.*;
+import java.security.interfaces.*;
+import javax.crypto.*;
+import javax.crypto.spec.*;
+import javax.crypto.interfaces.*;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -24,17 +19,126 @@ import java.security.spec.*;
 */
 class Security{
 
-    private Cipher cipher;
+    private Cipher cipher; //shared key for encryption/decryption
+    private KeyAgreement keyAgree;
+    private CommunicationInterface other;
+
     private String id;
-    public byte[] encodedParams; //need to be the same between communicating parties
-    public int len; //this is not useful, but needs to be communicated via network at one point
+    PrivateKey priv;
+    PublicKey myPub;
 
     /*
     * Initialize the class
     */
     public Security(String parentID) throws Exception{
+
         id = parentID;
-        //generateKey(getSharedSecret()); //using diffie-hellman
+        priv = getPrivate();
+        myPub = getPublic(id);
+
+    }
+
+    public void createSharedSecret(CommunicationInterface mes) throws Exception{
+
+        other = mes;
+
+        /*
+         * Alice creates her own DH key pair with 2048-bit key size
+         */
+        System.out.println("ALICE: Generate DH keypair ...");
+        KeyPairGenerator aliceKpairGen = KeyPairGenerator.getInstance("DH");
+        aliceKpairGen.initialize(2048);
+        KeyPair aliceKpair = aliceKpairGen.generateKeyPair();
+        
+        // Alice creates and initializes her DH KeyAgreement object
+        System.out.println("ALICE: Initialization ...");
+        keyAgree = KeyAgreement.getInstance("DH");
+        keyAgree.init(aliceKpair.getPrivate());
+        
+        // Alice encodes her public key, and sends it over to Bob.
+        byte[] pubKeyEnc = aliceKpair.getPublic().getEncoded();
+
+        other.createPub(pubKeyEnc);
+
+    }
+
+    public void createPub(byte[] otherPub) throws Exception{
+
+        KeyFactory bobKeyFac = KeyFactory.getInstance("DH");
+        X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(otherPub);
+
+        PublicKey alicePubKey = bobKeyFac.generatePublic(x509KeySpec);
+
+        /*
+         * Bob gets the DH parameters associated with Alice's public key.
+         * He must use the same parameters when he generates his own key
+         * pair.
+         */
+        DHParameterSpec dhParamFromAlicePubKey = ((DHPublicKey)alicePubKey).getParams();
+
+        // Bob creates his own DH key pair
+        System.out.println("BOB: Generate DH keypair ...");
+        KeyPairGenerator bobKpairGen = KeyPairGenerator.getInstance("DH");
+        bobKpairGen.initialize(dhParamFromAlicePubKey);
+        KeyPair bobKpair = bobKpairGen.generateKeyPair();
+
+        // Bob creates and initializes his DH KeyAgreement object
+        System.out.println("BOB: Initialization ...");
+        KeyAgreement bobKeyAgree = KeyAgreement.getInstance("DH");
+        bobKeyAgree.init(bobKpair.getPrivate());
+
+        // Bob encodes his public key, and sends it over to Alice.
+        byte[] bobPubKeyEnc = bobKpair.getPublic().getEncoded();
+
+        other.sharePub(bobPubKeyEnc);
+
+        System.out.println("BOB: Execute PHASE1 ...");
+        bobKeyAgree.doPhase(alicePubKey, true);
+        byte[] aliceSharedSecret = bobKeyAgree.generateSecret();
+        System.out.println(toHexString(aliceSharedSecret));
+
+    }
+
+    private static void byte2hex(byte b, StringBuffer buf) {
+        char[] hexChars = { '0', '1', '2', '3', '4', '5', '6', '7', '8',
+                '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+        int high = ((b & 0xf0) >> 4);
+        int low = (b & 0x0f);
+        buf.append(hexChars[high]);
+        buf.append(hexChars[low]);
+    }
+
+    /*
+     * Converts a byte array to hex string
+     */
+    private static String toHexString(byte[] block) {
+        StringBuffer buf = new StringBuffer();
+        int len = block.length;
+        for (int i = 0; i < len; i++) {
+            byte2hex(block[i], buf);
+            if (i < len-1) {
+                buf.append(":");
+            }
+        }
+        return buf.toString();
+    }
+
+    public void sharePub(byte[] otherPub) throws Exception{
+
+        KeyFactory aliceKeyFac = KeyFactory.getInstance("DH");
+        X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(otherPub);
+        PublicKey bobPubKey = aliceKeyFac.generatePublic(x509KeySpec);
+        System.out.println("ALICE: Execute PHASE1 ...");
+        keyAgree.doPhase(bobPubKey, true);
+        byte[] aliceSharedSecret = keyAgree.generateSecret();
+        System.out.println(toHexString(aliceSharedSecret));
+
+    }
+
+    public void generateCipher(){
+
+        cipher = null;
+
     }
         
     private PrivateKey getPrivate() throws Exception {
@@ -54,119 +158,7 @@ class Security{
         KeyFactory kf = KeyFactory.getInstance("RSA");
 
         return kf.generatePublic(spec);
+
     }
-
-    /*
-    * Get a shared secret between client and server
-    * @return      byte[] shared secret
-    *
-    private byte[] getSharedSecret(){
-        try{ //client
-
-            KeyPairGenerator kpairGen = KeyPairGenerator.getInstance("DH");
-            kpairGen.initialize(2048);
-            KeyPair kpair = kpairGen.generateKeyPair();
-            KeyAgreement keyAgree = KeyAgreement.getInstance("DH");
-            keyAgree.init(kpair.getPrivate());
-            
-            byte[] pubKeyEnc = kpair.getPublic().getEncoded();
-            sv.queue.put(pubKeyEnc); //put public key into server message queue
-            System.out.println("client sent key");
-
-            byte[] clientPubKeyEnc = queue.take(); //wait for server to generate a public key
-
-            KeyFactory keyFac = KeyFactory.getInstance("DH");
-            X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(clientPubKeyEnc);
-            x509KeySpec = new X509EncodedKeySpec(clientPubKeyEnc);
-            PublicKey clientPubKey = keyFac.generatePublic(x509KeySpec);
-            keyAgree.doPhase(clientPubKey, true);
-
-            byte[] sharedSecret = keyAgree.generateSecret(); //store shared secret
-            len = sharedSecret.length; //set public var for use by server (or later send over network)
-            sv.queue.put("done".getBytes()); //notify server that this var has been set (or later not necessary)
-            
-            return sharedSecret;
-
-        }catch(Exception e){
-            System.out.println("Exception caught: " + e.getCause().getMessage());
-        }
-
-        return null;
-
-        try{ //server
-            
-            byte[] clientPubKeyEnc = queue.take(); //wait for client to generate a public key
-
-            KeyFactory keyFac = KeyFactory.getInstance("DH");
-            X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(clientPubKeyEnc);
-            PublicKey clientPubKey = keyFac.generatePublic(x509KeySpec);
-
-            DHParameterSpec dhParamFromClientPubKey = ((DHPublicKey)clientPubKey).getParams(); //ensure params are the same for both keys
-            KeyPairGenerator kPairGen = KeyPairGenerator.getInstance("DH");
-            kPairGen.initialize(dhParamFromClientPubKey);
-            KeyPair kPair = kPairGen.generateKeyPair();
-            
-            KeyAgreement keyAgree = KeyAgreement.getInstance("DH");
-            keyAgree.init(kPair.getPrivate());
-
-            byte[] pubKeyEnc = kPair.getPublic().getEncoded();
-            cl.queue.put(pubKeyEnc); //put public key in client message queue
-            System.out.println("client sent key");
-
-            keyAgree.doPhase(clientPubKey, true);
-
-            queue.take(); //wait for client to set key length
-
-            byte[] sharedSecret = new byte[cl.len]; //store shared secret
-            len = keyAgree.generateSecret(sharedSecret, 0); //set private var
-
-            return sharedSecret;
-
-        }catch(Exception e){
-            System.out.println("Exception caught: " + e.getCause().getMessage());
-        }
-
-        return null;
-    }
-
-    /*
-    * Use shared secret to make a shared key
-    * @param       byte[] sharedSecret
-    * @return      void
-    *
-    private void generateKey(byte[] sharedSecret){
-
-        try{ //client
-
-            queue.take(); //wait for server to notify that params have been declared
-
-            SecretKeySpec aesKey = new SecretKeySpec(sharedSecret, 0, 16, "AES"); //use shared secret
-            AlgorithmParameters aesParams = AlgorithmParameters.getInstance("AES");
-            aesParams.init(encodedParams);
-            cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            cipher.init(Cipher.DECRYPT_MODE, aesKey, aesParams); //initialize private variable to store cipher
-
-        }catch(Exception e){
-            System.out.println("Exception caught.");
-        }
-
-        try{ //server
-            
-            SecretKeySpec aesKey = new SecretKeySpec(sharedSecret, 0, 16, "AES"); //use shared secret
-            cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            cipher.init(Cipher.ENCRYPT_MODE, aesKey); //initialize private variable to store cipher
-
-            encodedParams = cipher.getParameters().getEncoded(); //store params to send to client          
-            cl.encodedParams = encodedParams; //share params with client
-            cl.queue.put("done".getBytes()); //notify client that params have been shared
-
-        }catch(Exception e){
-            System.out.println("Exception caught.");
-        }
-
-    }*/
-
-    //String message = new String(cipher.doFinal(queue.take())); //decrypt
-    //byte[] ciphertext = cipher.doFinal(message.getBytes()); //encrypt message
 
 }

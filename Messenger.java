@@ -57,6 +57,14 @@ class Messenger implements CommunicationInterface{
         id = newID;
     }
 
+    public void createPub(byte[] otherPub) throws Exception{
+        secure.createPub(otherPub);
+    }
+
+    public void sharePub(byte[] otherPub) throws Exception{
+        secure.sharePub(otherPub);
+    }
+
     /*
     * Receive a message from an external object
     * @param       String message
@@ -102,6 +110,7 @@ class Messenger implements CommunicationInterface{
             receiver.init(id); //initialize communication (add us to receiver's comm array)
             comm.add(receiver); //add to our own
             cont.addText("Connected to: " + temp[1] + "\n"); //display connection status for user
+            secure.createSharedSecret(receiver);
 
         }
 
