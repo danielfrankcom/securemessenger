@@ -63,8 +63,8 @@ class Messenger implements CommunicationInterface{
     * @param       byte[] otherPub (public key)
     * @return      void
     */
-    public void createPub(byte[] otherPub) throws Exception{
-        secure.createPub(otherPub);
+    public void createPub(byte[] otherPub, CommunicationInterface other) throws Exception{
+        secure.createPub(otherPub, other);
     }
 
     /*
@@ -73,8 +73,8 @@ class Messenger implements CommunicationInterface{
     * @param       byte[] otherPub (public key)
     * @return      void
     */
-    public void sharePub(byte[] otherPub) throws Exception{
-        secure.sharePub(otherPub);
+    public void share(byte[] otherPub, byte[] params) throws Exception{
+        secure.share(otherPub, params);
     }
 
     /*
@@ -82,9 +82,12 @@ class Messenger implements CommunicationInterface{
     * @param       String message
     * @return      void
     */
-    public void message(String msg) throws Exception{
-        cont.addText(comm.get(0).getID() + ": " + msg + "\n");
-        System.out.println(flags[0]);
+    public void message(byte[] msg) throws Exception{
+        if(flags[0]){
+            cont.addText(comm.get(0).getID() + ": " + secure.decrypt(msg) + "\n");
+        }else{
+            cont.addText(comm.get(0).getID() + ": " + msg.toString() + "\n");
+        }
         //this needs to be expanded later for more connections
         //currently it assumes all messages are from the 1st connection
     }
@@ -99,7 +102,11 @@ class Messenger implements CommunicationInterface{
         cont.addText("you: " + msg + "\n"); //display the message for the user
 
         for(int i = 0; i < comm.size(); i++){ //sends message to all connections
-            comm.get(i).message(msg);
+            if(flags[0]){
+                comm.get(i).message(secure.encrypt(msg));
+            }else{
+                comm.get(i).message(msg.getBytes());
+            }
         }
 
     }
@@ -121,8 +128,7 @@ class Messenger implements CommunicationInterface{
             CommunicationInterface receiver = (CommunicationInterface) registry.lookup(temp[1]); //get from RMI
             receiver.init(id); //initialize communication (add us to receiver's comm array)
             comm.add(receiver); //add to our own
-            cont.addText("Connected to: " + temp[1] + "\n"); //display connection status for user
-            secure.createSharedSecret(receiver);
+            cont.addText("[Connected to: " + temp[1] + "]\n"); //display connection status for user
 
         }
 
@@ -138,6 +144,7 @@ class Messenger implements CommunicationInterface{
         CommunicationInterface sender = (CommunicationInterface) registry.lookup(other); //get from RMI
         comm.add(sender); //add sender to our comm array
         cont.addText("[Connected to: " + other + "]\n"); //display connection status for user
+        secure.createSharedSecret(sender);
 
     }
 
@@ -165,7 +172,7 @@ class Messenger implements CommunicationInterface{
         cont.addText("[Your id is: " + id + "]\n");
         cont.addText("[Type ':q' to quit or ':connect <id>' to connect to another messenger.]\n");
 
-        secure = new Security(id);
+        secure = new Security(self, id);
         flags = new Boolean[]{true, true, true};
         
     }

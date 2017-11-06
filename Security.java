@@ -19,20 +19,24 @@ import java.security.spec.*;
 */
 class Security{
 
-    private Cipher cipher; //shared key for encryption/decryption
+    private Cipher enCipher; //shared key for encryption
+    private Cipher deCipher; //shared key for decryption
     private KeyAgreement keyAgree; //object for access in multiple methods
     private CommunicationInterface other; //messenger that we are communicating with
 
-    private String id; //string id of our Messenger parent
-    PrivateKey priv; //private key (not diffie-hellman)
+    private CommunicationInterface self; //our Messenger parent
+    private String id; //id of our Messenger parent
+    private PrivateKey priv; //private key (not diffie-hellman)
     PublicKey myPub; //public key (not diffie-hellman)
 
     /*
     * Initialize the class
     */
-    public Security(String parentID) throws Exception{
+    public Security(CommunicationInterface parent, String parentID) throws Exception{
 
-        id = parentID; //set instance variable
+        self = parent; //set instance variables
+        id = parentID;
+
         priv = getPrivate(); //get from file
         myPub = getPublic(id); //get from file
 
@@ -55,7 +59,7 @@ class Security{
         keyAgree = KeyAgreement.getInstance("DH"); //init KeyAgreement instance for use in generating secret
         keyAgree.init(kPair.getPrivate());
 
-        other.createPub(kPair.getPublic().getEncoded()); //send encoded public key to other party
+        other.createPub(kPair.getPublic().getEncoded(), self); //send encoded public key to other party
 
     }
 
@@ -66,7 +70,7 @@ class Security{
     * @param       byte[] otherPubEnc (other party's public key)
     * @return      void
     */
-    public void createPub(byte[] otherPubEnc) throws Exception{
+    public void createPub(byte[] otherPubEnc, CommunicationInterface other) throws Exception{
 
         KeyFactory keyFac = KeyFactory.getInstance("DH");
         X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(otherPubEnc); //create a spec to determine other public key
@@ -81,19 +85,32 @@ class Security{
         KeyAgreement keyAgree = KeyAgreement.getInstance("DH"); //does not need to be externally defined as this step is self-contained
         keyAgree.init(kPair.getPrivate());
 
-        other.sharePub(kPair.getPublic().getEncoded()); //send encoded public key to other party
-
         keyAgree.doPhase(otherPub, true);
         byte[] sharedSecret = keyAgree.generateSecret(); //create diffie-hellman secret
+        SecretKeySpec aesKey = new SecretKeySpec(sharedSecret, 0, 16, "AES");
+
+        enCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        deCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+
+        enCipher.init(Cipher.ENCRYPT_MODE, aesKey); //create cipher
+        byte[] encodedParams = enCipher.getParameters().getEncoded();
+
+        AlgorithmParameters aesParams = AlgorithmParameters.getInstance("AES");
+        aesParams.init(encodedParams);
+        deCipher.init(Cipher.DECRYPT_MODE, aesKey, aesParams); //create cipher
+
+        other.share(kPair.getPublic().getEncoded(), encodedParams); //send required information to other party
 
     }
 
     /*
     * Third step in diffie-hellman protocol
+    * Take a public key and create a shared secret
+    * Take cipher params and use secret to create a cipher
     * @param       byte[] otherPubEnc (other party's public key)
     * @return      void
     */
-    public void sharePub(byte[] otherPubEnc) throws Exception{
+    public void share(byte[] otherPubEnc, byte[] params) throws Exception{
         
         KeyFactory keyFac = KeyFactory.getInstance("DH");
         X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(otherPubEnc); //create a spec to determine other public key
@@ -101,18 +118,66 @@ class Security{
 
         keyAgree.doPhase(otherPub, true);
         byte[] sharedSecret = keyAgree.generateSecret(); //create diffie-hellman secret
+        SecretKeySpec aesKey = new SecretKeySpec(sharedSecret, 0, 16, "AES");
+
+        enCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        deCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+
+        enCipher.init(Cipher.ENCRYPT_MODE, aesKey); //create cipher
+        byte[] encodedParams = enCipher.getParameters().getEncoded();
+
+        AlgorithmParameters aesParams = AlgorithmParameters.getInstance("AES");
+        aesParams.init(encodedParams);
+        deCipher.init(Cipher.DECRYPT_MODE, aesKey, aesParams); //create cipher
 
     }
 
     /*
-    * Sent from controller, user has typed a command to run
-    * @param       String command
-    * @return      void
+    * Encrypt text using the cipher
+    * @param       String plaintext
+    * @return      String ciphertext
     */
-    public void generateCipher(){
+    public byte[] encrypt(String plaintext) throws Exception{
 
-        cipher = null;
+        System.out.println(toHexString(enCipher.doFinal(plaintext.getBytes())));
+        return enCipher.doFinal(plaintext.getBytes());
 
+    }
+
+    /*
+    * Decrypt text using the cipher
+    * @param       String ciphertext
+    * @return      String plaintext
+    */
+    public String decrypt(byte[] ciphertext) throws Exception{
+
+        System.out.println(toHexString(ciphertext));
+        return deCipher.doFinal(ciphertext).toString();
+
+    }
+
+    private static void byte2hex(byte b, StringBuffer buf) {
+        char[] hexChars = { '0', '1', '2', '3', '4', '5', '6', '7', '8',
+                '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+        int high = ((b & 0xf0) >> 4);
+        int low = (b & 0x0f);
+        buf.append(hexChars[high]);
+        buf.append(hexChars[low]);
+    }
+
+    /*
+     * Converts a byte array to hex string
+     */
+    private static String toHexString(byte[] block) {
+        StringBuffer buf = new StringBuffer();
+        int len = block.length;
+        for (int i = 0; i < len; i++) {
+            byte2hex(block[i], buf);
+            if (i < len-1) {
+                buf.append(":");
+            }
+        }
+        return buf.toString();
     }
       
     /*
