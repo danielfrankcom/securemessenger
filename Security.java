@@ -38,66 +38,57 @@ class Security{
 
     }
 
-    public void createSharedSecret(CommunicationInterface mes) throws Exception{
+    public void createSharedSecret(CommunicationInterface obj) throws Exception{
 
-        other = mes;
+        other = obj; //set instance var for use by other functions
 
-        /*
-         * Alice creates her own DH key pair with 2048-bit key size
-         */
-        System.out.println("ALICE: Generate DH keypair ...");
-        KeyPairGenerator aliceKpairGen = KeyPairGenerator.getInstance("DH");
-        aliceKpairGen.initialize(2048);
-        KeyPair aliceKpair = aliceKpairGen.generateKeyPair();
+        KeyPairGenerator kPairGen = KeyPairGenerator.getInstance("DH");
+        kPairGen.initialize(2048);
+        KeyPair kPair = kPairGen.generateKeyPair(); //generate diffie-hellman public/private pair
         
-        // Alice creates and initializes her DH KeyAgreement object
-        System.out.println("ALICE: Initialization ...");
         keyAgree = KeyAgreement.getInstance("DH");
-        keyAgree.init(aliceKpair.getPrivate());
+        keyAgree.init(kPair.getPrivate());
+
+        other.createPub(kPair.getPublic().getEncoded()); //send encoded public key to other party
+
+    }
+
+    public void createPub(byte[] otherPubEnc) throws Exception{
+
+        KeyFactory keyFac = KeyFactory.getInstance("DH");
+        X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(otherPubEnc);
+
+        PublicKey otherPub = keyFac.generatePublic(x509KeySpec);
+
+        DHParameterSpec dhParam = ((DHPublicKey)otherPub).getParams();
+
+        KeyPairGenerator kPairGen = KeyPairGenerator.getInstance("DH");
+        kPairGen.initialize(dhParam);
+        KeyPair kPair = kPairGen.generateKeyPair();
+
+        KeyAgreement keyAgree = KeyAgreement.getInstance("DH");
+        keyAgree.init(kPair.getPrivate());
+
+        other.sharePub(kPair.getPublic().getEncoded()); //send encoded public key to other party
+
+        keyAgree.doPhase(otherPub, true);
+        byte[] sharedSecret = keyAgree.generateSecret();
+        System.out.println(toHexString(sharedSecret));
+
+    }
+
+    public void sharePub(byte[] otherPubEnc) throws Exception{
         
-        // Alice encodes her public key, and sends it over to Bob.
-        byte[] pubKeyEnc = aliceKpair.getPublic().getEncoded();
+        KeyFactory keyFac = KeyFactory.getInstance("DH");
+        X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(otherPubEnc);
+        PublicKey otherPub = keyFac.generatePublic(x509KeySpec);
 
-        other.createPub(pubKeyEnc);
-
-    }
-
-    public void createPub(byte[] otherPub) throws Exception{
-
-        KeyFactory bobKeyFac = KeyFactory.getInstance("DH");
-        X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(otherPub);
-
-        PublicKey alicePubKey = bobKeyFac.generatePublic(x509KeySpec);
-
-        /*
-         * Bob gets the DH parameters associated with Alice's public key.
-         * He must use the same parameters when he generates his own key
-         * pair.
-         */
-        DHParameterSpec dhParamFromAlicePubKey = ((DHPublicKey)alicePubKey).getParams();
-
-        // Bob creates his own DH key pair
-        System.out.println("BOB: Generate DH keypair ...");
-        KeyPairGenerator bobKpairGen = KeyPairGenerator.getInstance("DH");
-        bobKpairGen.initialize(dhParamFromAlicePubKey);
-        KeyPair bobKpair = bobKpairGen.generateKeyPair();
-
-        // Bob creates and initializes his DH KeyAgreement object
-        System.out.println("BOB: Initialization ...");
-        KeyAgreement bobKeyAgree = KeyAgreement.getInstance("DH");
-        bobKeyAgree.init(bobKpair.getPrivate());
-
-        // Bob encodes his public key, and sends it over to Alice.
-        byte[] bobPubKeyEnc = bobKpair.getPublic().getEncoded();
-
-        other.sharePub(bobPubKeyEnc);
-
-        System.out.println("BOB: Execute PHASE1 ...");
-        bobKeyAgree.doPhase(alicePubKey, true);
-        byte[] aliceSharedSecret = bobKeyAgree.generateSecret();
-        System.out.println(toHexString(aliceSharedSecret));
+        keyAgree.doPhase(otherPub, true);
+        byte[] sharedSecret = keyAgree.generateSecret();
+        System.out.println(toHexString(sharedSecret));
 
     }
+
 
     private static void byte2hex(byte b, StringBuffer buf) {
         char[] hexChars = { '0', '1', '2', '3', '4', '5', '6', '7', '8',
@@ -123,17 +114,6 @@ class Security{
         return buf.toString();
     }
 
-    public void sharePub(byte[] otherPub) throws Exception{
-
-        KeyFactory aliceKeyFac = KeyFactory.getInstance("DH");
-        X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(otherPub);
-        PublicKey bobPubKey = aliceKeyFac.generatePublic(x509KeySpec);
-        System.out.println("ALICE: Execute PHASE1 ...");
-        keyAgree.doPhase(bobPubKey, true);
-        byte[] aliceSharedSecret = keyAgree.generateSecret();
-        System.out.println(toHexString(aliceSharedSecret));
-
-    }
 
     public void generateCipher(){
 
