@@ -22,6 +22,7 @@ class Security{
     private Cipher enCipher; //shared key for encryption
     private Cipher deCipher; //shared key for decryption
     private KeyAgreement keyAgree; //object for access in multiple methods
+    private SecretKeySpec aesKey; //instance key for creating ciphers
     private CommunicationInterface other; //messenger that we are communicating with
 
     private CommunicationInterface self; //our Messenger parent
@@ -87,19 +88,14 @@ class Security{
 
         keyAgree.doPhase(otherPub, true);
         byte[] sharedSecret = keyAgree.generateSecret(); //create diffie-hellman secret
-        SecretKeySpec aesKey = new SecretKeySpec(sharedSecret, 0, 16, "AES");
+        aesKey = new SecretKeySpec(sharedSecret, 0, 16, "AES");
 
         enCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        deCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 
-        enCipher.init(Cipher.ENCRYPT_MODE, aesKey); //create cipher
-        byte[] encodedParams = enCipher.getParameters().getEncoded();
+        enCipher.init(Cipher.ENCRYPT_MODE, aesKey); //create cipher for encoding
+        byte[] params = enCipher.getParameters().getEncoded();
 
-        AlgorithmParameters aesParams = AlgorithmParameters.getInstance("AES");
-        aesParams.init(encodedParams);
-        deCipher.init(Cipher.DECRYPT_MODE, aesKey, aesParams); //create cipher
-
-        other.share(kPair.getPublic().getEncoded(), encodedParams); //send required information to other party
+        other.share(kPair.getPublic().getEncoded(), params); //send required information to other party
 
     }
 
@@ -110,7 +106,7 @@ class Security{
     * @param       byte[] otherPubEnc (other party's public key)
     * @return      void
     */
-    public void share(byte[] otherPubEnc, byte[] params) throws Exception{
+    public void share(byte[] otherPubEnc, byte[] otherParams) throws Exception{
         
         KeyFactory keyFac = KeyFactory.getInstance("DH");
         X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(otherPubEnc); //create a spec to determine other public key
@@ -118,17 +114,30 @@ class Security{
 
         keyAgree.doPhase(otherPub, true);
         byte[] sharedSecret = keyAgree.generateSecret(); //create diffie-hellman secret
-        SecretKeySpec aesKey = new SecretKeySpec(sharedSecret, 0, 16, "AES");
+        aesKey = new SecretKeySpec(sharedSecret, 0, 16, "AES");
 
         enCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        deCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 
-        enCipher.init(Cipher.ENCRYPT_MODE, aesKey); //create cipher
-        byte[] encodedParams = enCipher.getParameters().getEncoded();
+        enCipher.init(Cipher.ENCRYPT_MODE, aesKey); //create cipher for encoding
+        byte[] selfParams = enCipher.getParameters().getEncoded();
+
+        other.createDecoder(selfParams); //create decoder for this key
+        self.createDecoder(otherParams); //create decoder for other party's key (we do it here to avoid race condition)
+
+    }
+
+    /*
+    * Last step in diffie-hellman protocol
+    * Take cipher params to create a decoder
+    * @param       byte[] params
+    * @return      void
+    */
+    public void createDecoder(byte[] params) throws Exception{
 
         AlgorithmParameters aesParams = AlgorithmParameters.getInstance("AES");
-        aesParams.init(encodedParams);
-        deCipher.init(Cipher.DECRYPT_MODE, aesKey, aesParams); //create cipher
+        aesParams.init(params);
+        deCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        deCipher.init(Cipher.DECRYPT_MODE, aesKey, aesParams); //create cipher for decoding
 
     }
 
@@ -139,7 +148,7 @@ class Security{
     */
     public byte[] encrypt(String plaintext) throws Exception{
 
-        System.out.println(toHexString(enCipher.doFinal(plaintext.getBytes())));
+        System.out.println("");
         return enCipher.doFinal(plaintext.getBytes());
 
     }

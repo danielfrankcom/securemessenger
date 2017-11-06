@@ -73,8 +73,18 @@ class Messenger implements CommunicationInterface{
     * @param       byte[] otherPub (public key)
     * @return      void
     */
-    public void share(byte[] otherPub, byte[] params) throws Exception{
-        secure.share(otherPub, params);
+    public void share(byte[] otherPub, byte[] otherParams) throws Exception{
+        secure.share(otherPub, otherParams);
+    }
+
+    /*
+    * Wrapper function for Security class
+    * Allows secure pass through of security information
+    * @param       byte[] otherPub (public key)
+    * @return      void
+    */
+    public void createDecoder(byte[] params) throws Exception{
+        secure.createDecoder(params);
     }
 
     /*
@@ -128,6 +138,7 @@ class Messenger implements CommunicationInterface{
             CommunicationInterface receiver = (CommunicationInterface) registry.lookup(temp[1]); //get from RMI
             receiver.init(id); //initialize communication (add us to receiver's comm array)
             comm.add(receiver); //add to our own
+            secure.createSharedSecret(receiver);
             cont.addText("[Connected to: " + temp[1] + "]\n"); //display connection status for user
 
         }
@@ -143,8 +154,7 @@ class Messenger implements CommunicationInterface{
 
         CommunicationInterface sender = (CommunicationInterface) registry.lookup(other); //get from RMI
         comm.add(sender); //add sender to our comm array
-        cont.addText("[Connected to: " + other + "]\n"); //display connection status for user
-        secure.createSharedSecret(sender);
+        cont.addText("[Connected to: " + other + "]\n"); //display connection status for user 
 
     }
 
