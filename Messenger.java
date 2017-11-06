@@ -16,9 +16,10 @@ class Messenger implements CommunicationInterface{
     private static Registry registry; //the registry that stores other Messengers
     private ArrayList<CommunicationInterface> comm; //who are we currently communicating with
     private static Controller cont; //GUI controller
+    private static Security secure; //Security object for cryptography
     private static String id; //the id of our Messenger
 
-    private Boolean[] flags; //this will store the 3 security flags
+    private static Boolean[] flags; //this will store the 3 security flags
     //Let's set it manually for now and we can figure out how to modify later
     //[0] - confidentiality
     //[1] - integrity
@@ -63,6 +64,7 @@ class Messenger implements CommunicationInterface{
     */
     public void message(String msg) throws Exception{
         cont.addText(comm.get(0).getID() + ": " + msg + "\n");
+        System.out.println(flags[0]);
         //this needs to be expanded later for more connections
         //currently it assumes all messages are from the 1st connection
     }
@@ -141,6 +143,9 @@ class Messenger implements CommunicationInterface{
 
         cont.addText("[Your id is: " + id + "]\n");
         cont.addText("[Type ':q' to quit or ':connect <id>' to connect to another messenger.]\n");
+
+        secure = new Security(id);
+        flags = new Boolean[]{true, true, true};
         
     }
 
