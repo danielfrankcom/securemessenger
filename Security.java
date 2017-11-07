@@ -164,9 +164,8 @@ class Security{
     }
       
     /*
-    * Sent from controller, user has typed a command to run
-    * @param       String command
-    * @return      void
+    * Get private key for the current messenger from a file
+    * @return      PrivateKey
     */
     private PrivateKey getPrivate() throws Exception {
   
@@ -179,9 +178,9 @@ class Security{
     }
 
     /*
-    * Sent from controller, user has typed a command to run
-    * @param       String command
-    * @return      void
+    * Get public key for the specified messenger from a file
+    * @param       String messenger (id of messenger to get public key for)
+    * @return      PublicKey
     */
     private PublicKey getPublic(String messenger) throws Exception {
 
