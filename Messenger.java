@@ -95,8 +95,9 @@ class Messenger implements CommunicationInterface{
     public void message(byte[] msg) throws Exception{
         if(flags[0]){
             cont.addText(comm.get(0).getID() + ": " + secure.decrypt(msg) + "\n");
+            System.out.println("flagged");
         }else{
-            cont.addText(comm.get(0).getID() + ": " + msg.toString() + "\n");
+            cont.addText(comm.get(0).getID() + ": " + new String(msg) + "\n");
         }
         //this needs to be expanded later for more connections
         //currently it assumes all messages are from the 1st connection
@@ -183,7 +184,7 @@ class Messenger implements CommunicationInterface{
         cont.addText("[Type ':q' to quit or ':connect <id>' to connect to another messenger.]\n");
 
         secure = new Security(self, id);
-        flags = new Boolean[]{true, true, true};
+        flags = new Boolean[]{false, true, true};
         
     }
 
