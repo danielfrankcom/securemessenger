@@ -37,6 +37,11 @@ public class Controller implements Initializable{
     public void onEnter(ActionEvent a) throws Exception{
 
         String msg = input.getText(); //get field value
+
+        if(msg.equals("")){
+            return;
+        }
+
         input.clear(); //clear field once stored
         
         if(msg.charAt(0) == ':'){ //if the input is a command
