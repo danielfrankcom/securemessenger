@@ -223,11 +223,11 @@ class Security{
     */
     private PrivateKey getPrivate() throws Exception {
   
-        byte[] keyBytes = Files.readAllBytes(Paths.get("keys/private-" + id + "/private.der"));
-        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
-        KeyFactory kf = KeyFactory.getInstance("RSA");
+        byte[] key = Files.readAllBytes(Paths.get("keys/private-" + id + "/private.der"));
+        PKCS8EncodedKeySpec PKCS8KeySpec = new PKCS8EncodedKeySpec(key);
+        KeyFactory keyFac = KeyFactory.getInstance("RSA");
 
-        return kf.generatePrivate(spec);
+        return keyFac.generatePrivate(PKCS8KeySpec);
 
     }
 
@@ -238,11 +238,11 @@ class Security{
     */
     private PublicKey getPublic(String messenger) throws Exception {
 
-        byte[] keyBytes = Files.readAllBytes(Paths.get("keys/public/" + messenger + ".der"));
-        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
-        KeyFactory kf = KeyFactory.getInstance("RSA");
+        byte[] key = Files.readAllBytes(Paths.get("keys/public/" + messenger + ".der"));
+        X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(key);
+        KeyFactory keyFac = KeyFactory.getInstance("RSA");
 
-        return kf.generatePublic(spec);
+        return keyFac.generatePublic(x509KeySpec);
 
     }
 
