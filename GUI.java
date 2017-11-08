@@ -53,7 +53,9 @@ public class GUI extends Application{
     */
     @Override //called by JavaFX when application closed
     public void stop(){
+
         System.exit(0); //stop all threads including connection listener and RMI
+        
     }
 
     /*

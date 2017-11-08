@@ -66,8 +66,10 @@ public class Controller implements Initializable{
     */
     @FXML
     public void onClickConfidentiality(ActionEvent a){
+
         confidentialityChecked = !confidentialityChecked;
         messenger.setFlags(new Boolean[]{confidentialityChecked, integrityChecked, authenticationChecked});
+
     }
 
     /*
@@ -77,8 +79,10 @@ public class Controller implements Initializable{
     */
     @FXML
     public void onClickIntegrity(ActionEvent a){
+
         integrityChecked = !integrityChecked;
         messenger.setFlags(new Boolean[]{confidentialityChecked, integrityChecked, authenticationChecked});
+
     }
 
     /*
@@ -88,8 +92,10 @@ public class Controller implements Initializable{
     */
     @FXML
     public void onClickAuthentication(ActionEvent a){
+
         authenticationChecked = !authenticationChecked;
         messenger.setFlags(new Boolean[]{confidentialityChecked, integrityChecked, authenticationChecked});
+
     }
 
     /*
@@ -98,9 +104,11 @@ public class Controller implements Initializable{
     * @return      void
     */
     public void setCheckBoxes(Boolean value){
+
         confidentiality.setDisable(value);
         integrity.setDisable(value);
         authentication.setDisable(value);
+
     }
 
     /*
@@ -109,7 +117,9 @@ public class Controller implements Initializable{
     * @return      void
     */
     public void addText(String text){
+
         messages.appendText(text); //append to GUI text area
+
     }
     
     /*
@@ -118,7 +128,9 @@ public class Controller implements Initializable{
     * @return      void
     */
     public void setMessenger(Messenger mes){
+
         messenger = mes;
+
     }
 
 }

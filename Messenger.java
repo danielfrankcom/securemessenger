@@ -49,7 +49,9 @@ class Messenger implements CommunicationInterface{
     * @return      String id
     */
     public String getID(){
+        
         return id;
+
     }
 
     /*
@@ -58,7 +60,9 @@ class Messenger implements CommunicationInterface{
     * @return     void
     */
     public void setID(String newID){
+
         id = newID;
+
     }
 
     /*
@@ -68,11 +72,13 @@ class Messenger implements CommunicationInterface{
     * @return      void
     */
     public void createPub(byte[] otherPub, CommunicationInterface other){
+
         try{
             secure.createPub(otherPub, other);
         }catch(Exception e){
             System.out.println("error in createPub()");
         }
+
     }
 
     /*
@@ -82,11 +88,13 @@ class Messenger implements CommunicationInterface{
     * @return      void
     */
     public void share(byte[] otherPub, byte[] otherParams){
+
         try{
             secure.share(otherPub, otherParams);
         }catch(Exception e){
             System.out.println("error in share()");
         }
+
     }
 
     /*
@@ -96,11 +104,13 @@ class Messenger implements CommunicationInterface{
     * @return      void
     */
     public void createDecoder(byte[] params){
+
         try{
             secure.createDecoder(params);
         }catch(Exception e){
             System.out.println("error in createDecoder()");
         }
+
     }
 
     /*
@@ -110,7 +120,9 @@ class Messenger implements CommunicationInterface{
     * @return      void
     */
     public void setFlags(Boolean[] flags){
+
         secure.setFlags(flags);
+
     }
 
     /*
@@ -120,7 +132,9 @@ class Messenger implements CommunicationInterface{
     * @return      void
     */
     public Boolean[] getFlags(){
+
         return secure.getFlags();
+    
     }
 
     /*
@@ -129,6 +143,7 @@ class Messenger implements CommunicationInterface{
     * @return      void
     */
     public void message(byte[] msg){
+
         try{
             cont.addText(comm.get(0).getID() + ": " + secure.receive(msg) + "\n"); //display received messages
         }catch(Exception e){
@@ -136,6 +151,7 @@ class Messenger implements CommunicationInterface{
         }
         //this could be expanded outside of the scope of the assignment
         //currently it assumes all messages are from the 1st connection
+
     }
 
     /*
