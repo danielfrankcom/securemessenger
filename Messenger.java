@@ -169,7 +169,8 @@ class Messenger implements CommunicationInterface{
             if(secure.getFlags()[0]){
                 secure.createSharedSecret(receiver); //ensure encryption is possible if wanted
             }
-            cont.addText("[Connected to: " + temp[1] + "]\n"); //display connection status for user
+            cont.addText("[Connected to " + temp[1] + "]\n"); //display connection status for user
+            cont.addText("[Type ':disconnect' to remove connections from other messengers]\n"); //display disconnect prompt
             System.out.println(secure.getFlags()[0] + " " + secure.getFlags()[1] + " " + secure.getFlags()[2]);
 
         }
@@ -186,7 +187,8 @@ class Messenger implements CommunicationInterface{
         cont.setCheckBoxes(true); //disable flag checkboxes
         CommunicationInterface sender = (CommunicationInterface) registry.lookup(other); //get from RMI
         comm.add(sender); //add sender to our comm array
-        cont.addText("[Connected to: " + other + "]\n"); //display connection status for user 
+        cont.addText("[Connected to " + other + "]\n"); //display connection status for user
+        cont.addText("[Type ':disconnect' to remove connections from other messengers]\n"); //display disconnect prompt
 
     }
 
