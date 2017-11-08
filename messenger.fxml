@@ -10,8 +10,8 @@
   <children>
     <TextField fx:id="input" layoutX="14.0" layoutY="349.0" onAction="#onEnter" prefHeight="30.0" prefWidth="444.0" promptText="" text="" />
     <TextArea fx:id="messages" editable="false" layoutX="14.0" layoutY="14.0" prefHeight="315.0" prefWidth="572.0" text="" wrapText="true" />
-    <CheckBox layoutX="480.0" layoutY="338.0" mnemonicParsing="false" text="Confidentiality" />
-    <CheckBox layoutX="480.0" layoutY="356.0" mnemonicParsing="false" text="Integrity" />
-    <CheckBox layoutX="480.0" layoutY="374.0" mnemonicParsing="false" text="Authentication" />
+    <CheckBox id="con" fx:id="confidentiality" layoutX="480.0" layoutY="338.0" mnemonicParsing="false" onAction="#onClick" text="Confidentiality" />
+    <CheckBox fx:id="integrity" layoutX="480.0" layoutY="356.0" mnemonicParsing="false" onAction="#onClick" text="Integrity" />
+    <CheckBox fx:id="authentication" layoutX="480.0" layoutY="374.0" mnemonicParsing="false" onAction="#onClick" text="Authentication" />
   </children>
 </AnchorPane>

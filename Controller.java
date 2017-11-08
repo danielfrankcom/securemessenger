@@ -3,6 +3,7 @@ import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 
@@ -14,6 +15,9 @@ public class Controller implements Initializable{
 
     @FXML TextArea messages; //these 2 are passed from the FXML (GUI) file
     @FXML TextField input;
+    @FXML CheckBox confidentiality;
+    @FXML CheckBox integrity;
+    @FXML CheckBox authentication;
 
     private Messenger messenger; //this stores the Messenger that owns the GUI
     
@@ -49,6 +53,18 @@ public class Controller implements Initializable{
         }else{
             messenger.typed(msg); //pass on the message
         }
+
+    }
+
+    /*
+    * Runs when a check box is modified
+    * @param       ActionEvent a (not used but required)
+    * @return      void
+    */
+    @FXML
+    public void onClick(ActionEvent a) throws Exception{
+
+        System.out.println("checked");
 
     }
 
