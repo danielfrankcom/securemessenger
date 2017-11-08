@@ -48,8 +48,12 @@ class Security{
 
         flags = new Boolean[]{false,false, false};
 
-        priv = getPrivate(); //get from file
-        myPub = getPublic(id); //get from file
+        try{
+            priv = getPrivate(); //get from file
+            myPub = getPublic(id); //get from file
+        }catch(Exception e){
+            System.out.println("public/private key read error, maybe user does not exist");
+        }
 
     }
 
