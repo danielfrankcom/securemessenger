@@ -194,6 +194,15 @@ class Security{
             return new String(msg);
         }
     }
+
+    /*
+    * Set flags from Messenger
+    * @param       Boolean[] flag
+    * @return      void
+    */
+    public void setFlags(Boolean[] newFlags) throws Exception{
+        flags = newFlags;
+    }
       
     /*
     * Get private key for the current messenger from a file

@@ -67,7 +67,7 @@ public class Controller implements Initializable{
     @FXML
     public void onClickConfidentiality(ActionEvent a) throws Exception{
         confidentialityChecked = !confidentialityChecked;
-        System.out.println("New conf val: " + confidentialityChecked);
+        messenger.setFlags(new Boolean[]{confidentialityChecked, integrityChecked, authenticationChecked});
     }
 
     /*
@@ -78,7 +78,7 @@ public class Controller implements Initializable{
     @FXML
     public void onClickIntegrity(ActionEvent a) throws Exception{
         integrityChecked = !integrityChecked;
-        System.out.println("New integ val: " + integrityChecked);
+        messenger.setFlags(new Boolean[]{confidentialityChecked, integrityChecked, authenticationChecked});
     }
 
     /*
@@ -89,7 +89,7 @@ public class Controller implements Initializable{
     @FXML
     public void onClickAuthentication(ActionEvent a) throws Exception{
         authenticationChecked = !authenticationChecked;
-        System.out.println("New auth val: " + authenticationChecked);
+        messenger.setFlags(new Boolean[]{confidentialityChecked, integrityChecked, authenticationChecked});
     }
 
     /*

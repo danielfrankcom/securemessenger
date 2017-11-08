@@ -82,6 +82,16 @@ class Messenger implements CommunicationInterface{
     }
 
     /*
+    * Wrapper function for Security class
+    * Allows secure pass through of security information
+    * @param       Boolean[] flags
+    * @return      void
+    */
+    public void setFlags(Boolean[] flags) throws Exception{
+        secure.setFlags(flags);
+    }
+
+    /*
     * Receive a message from an external object
     * @param       String message
     * @return      void
@@ -136,6 +146,7 @@ class Messenger implements CommunicationInterface{
             comm.add(receiver); //add to our own
             secure.createSharedSecret(receiver);
             cont.addText("[Connected to: " + temp[1] + "]\n"); //display connection status for user
+            System.out.println(secure.flags[0] + " " + secure.flags[1] + " " + secure.flags[2]);
 
         }
 
