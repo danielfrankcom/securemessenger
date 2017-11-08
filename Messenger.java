@@ -18,12 +18,6 @@ class Messenger implements CommunicationInterface{
     private static Controller cont; //GUI controller
     private static Security secure; //Security object for cryptography
     private static String id; //the id of our Messenger
-
-    private static Boolean[] flags; //this will store the 3 security flags
-    //Let's set it manually for now and we can figure out how to modify later
-    //[0] - confidentiality
-    //[1] - integrity
-    //[2] - authentication
       
     /*
     * Initialize the Messenger
@@ -113,11 +107,7 @@ class Messenger implements CommunicationInterface{
         cont.addText("you: " + msg + "\n"); //display the message for the user
 
         for(int i = 0; i < comm.size(); i++){ //sends message to all connections
-            if(flags[0]){
-                comm.get(i).message(secure.encrypt(msg));
-            }else{
-                comm.get(i).message(msg.getBytes());
-            }
+            comm.get(i).message(secure.send(msg));
         }
 
     }
@@ -183,8 +173,7 @@ class Messenger implements CommunicationInterface{
         cont.addText("[Your id is: " + id + "]\n");
         cont.addText("[Type ':q' to quit or ':connect <id>' to connect to another messenger.]\n");
 
-        secure = new Security(self, id);
-        flags = new Boolean[]{false, true, true};
+        secure = new Security(self, id, false, false, false);
         
     }
 

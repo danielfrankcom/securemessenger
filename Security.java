@@ -28,13 +28,21 @@ class Security{
     private PrivateKey priv; //private key (not diffie-hellman)
     PublicKey myPub; //public key (not diffie-hellman)
 
+    private static Boolean[] flags; //this will store the 3 security flags
+    //Let's set it manually for now and we can figure out how to modify later
+    //[0] - confidentiality
+    //[1] - integrity
+    //[2] - authentication
+
     /*
     * Initialize the class
     */
-    public Security(CommunicationInterface parent, String parentID) throws Exception{
+    public Security(CommunicationInterface parent, String parentID, Boolean confidentiality, Boolean integrity, Boolean authentication) throws Exception{
 
         self = parent; //set instance variables
         id = parentID;
+
+        flags = new Boolean[]{confidentiality, integrity, authentication};
 
         priv = getPrivate(); //get from file
         myPub = getPublic(id); //get from file
@@ -148,6 +156,14 @@ class Security{
 
         return enCipher.doFinal(plaintext.getBytes());
 
+    }
+
+    public byte[] send(String msg) throws Exception{
+        if(flags[0]){
+            return encrypt(msg);
+        }else{
+            return msg.getBytes();
+        }
     }
 
     /*
