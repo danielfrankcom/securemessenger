@@ -93,6 +93,17 @@ public class Controller implements Initializable{
     }
 
     /*
+    * Enable/disable checkboxes once connection is established/disconnected
+    * @param       Boolean value (set checkbox disabled value to this)
+    * @return      void
+    */
+    public void setCheckBoxes(Boolean value) throws Exception{
+        confidentiality.setDisable(value);
+        integrity.setDisable(value);
+        authentication.setDisable(value);
+    }
+
+    /*
     * Add a line to the messaging window (for external use)
     * @param       String message
     * @return      void

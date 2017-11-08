@@ -37,12 +37,12 @@ class Security{
     /*
     * Initialize the class
     */
-    public Security(CommunicationInterface parent, String parentID, Boolean confidentiality, Boolean integrity, Boolean authentication) throws Exception{
+    public Security(CommunicationInterface parent, String parentID) throws Exception{
 
         self = parent; //set instance variables
         id = parentID;
 
-        flags = new Boolean[]{confidentiality, integrity, authentication};
+        flags = new Boolean[]{false,false, false};
 
         priv = getPrivate(); //get from file
         myPub = getPublic(id); //get from file
@@ -150,7 +150,7 @@ class Security{
     /*
     * Encrypt text using the cipher
     * @param       String plaintext
-    * @return      String ciphertext
+    * @return      byte[] ciphertext
     */
     public byte[] encrypt(String plaintext) throws Exception{
 
@@ -158,6 +158,11 @@ class Security{
 
     }
 
+    /*
+    * Utilize flags to create a sendable message
+    * @param       String msg (to make sendable)
+    * @return      btye[] msg (sendable)
+    */
     public byte[] send(String msg) throws Exception{
         if(flags[0]){
             return encrypt(msg);
@@ -168,13 +173,26 @@ class Security{
 
     /*
     * Decrypt text using the cipher
-    * @param       String ciphertext
+    * @param       byte[] ciphertext
     * @return      String plaintext
     */
     public String decrypt(byte[] ciphertext) throws Exception{
 
         return new String(deCipher.doFinal(ciphertext));
 
+    }
+
+    /*
+    * Utilize flags to create a sendable message
+    * @param       byte[] msg (to make sendable)
+    * @return      String msg (sendable)
+    */
+    public String receive(byte[] msg) throws Exception{
+        if(flags[0]){
+            return decrypt(msg);
+        }else{
+            return new String(msg);
+        }
     }
       
     /*
