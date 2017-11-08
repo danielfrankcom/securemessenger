@@ -16,8 +16,11 @@ public class Controller implements Initializable{
     @FXML TextArea messages; //these 2 are passed from the FXML (GUI) file
     @FXML TextField input;
     @FXML CheckBox confidentiality;
+    Boolean confidentialityChecked = false;
     @FXML CheckBox integrity;
+    Boolean integrityChecked = false;
     @FXML CheckBox authentication;
+    Boolean authenticationChecked = false;
 
     private Messenger messenger; //this stores the Messenger that owns the GUI
     
@@ -57,15 +60,33 @@ public class Controller implements Initializable{
     }
 
     /*
-    * Runs when a check box is modified
+    * Runs when confidentiality check box is modified
     * @param       ActionEvent a (not used but required)
     * @return      void
     */
     @FXML
-    public void onClick(ActionEvent a) throws Exception{
+    public void onClickConfidentiality(ActionEvent a) throws Exception{
+        System.out.println("confidentiality");
+    }
 
-        System.out.println("checked");
+    /*
+    * Runs when integrity check box is modified
+    * @param       ActionEvent a (not used but required)
+    * @return      void
+    */
+    @FXML
+    public void onClickIntegrity(ActionEvent a) throws Exception{
+        System.out.println("integrity");
+    }
 
+    /*
+    * Runs when authentication check box is modified
+    * @param       ActionEvent a (not used but required)
+    * @return      void
+    */
+    @FXML
+    public void onClickAuthentication(ActionEvent a) throws Exception{
+        System.out.println("authentication");
     }
 
     /*
