@@ -1,4 +1,6 @@
 import java.io.FileInputStream;
+import java.io.IOException;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -22,9 +24,19 @@ public class GUI extends Application{
     @Override
     public void start(Stage stage){
 
-        FileInputStream fxmlStream = new FileInputStream("messenger.fxml"); //load layout file
+        FileInputStream fxmlStream = null;
+        try{
+            fxmlStream = new FileInputStream("messenger.fxml"); //load layout file
+        }catch(Exception e){
+            System.out.println("FXML file error");
+        }
         FXMLLoader loader = new FXMLLoader();
-        AnchorPane root = (AnchorPane) loader.load(fxmlStream);
+        AnchorPane root = null;
+        try{
+            root = (AnchorPane) loader.load(fxmlStream);
+        }catch(IOException e){
+            System.out.println("FXML loader error");
+        }
 
         controller = (Controller) loader.getController(); //access and set instance controller
     

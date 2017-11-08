@@ -1,7 +1,10 @@
-import java.rmi.registry.Registry; 
-import java.rmi.registry.LocateRegistry; 
-import java.rmi.RemoteException; 
+import java.rmi.registry.Registry;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.rmi.AlreadyBoundException;
+import java.rmi.server.ExportException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,7 +24,7 @@ class Messenger implements CommunicationInterface{
     private static Controller cont; //GUI controller
     private static Security secure; //Security object for cryptography
     private static String id; //the id of our Messenger
-      
+
     /*
     * Initialize the Messenger
     */
@@ -31,8 +34,12 @@ class Messenger implements CommunicationInterface{
 
         try{
             registry = LocateRegistry.createRegistry(1099); //try to create registry
-        }catch(java.rmi.server.ExportException e){ //if caught, then server already running
-            registry = LocateRegistry.getRegistry(); //instead, connect to existing one
+        }catch(RemoteException e){ //if caught, then server already running
+            try{
+                registry = LocateRegistry.getRegistry(); //instead, connect to existing one
+            }catch(RemoteException f){
+                System.out.println("Error creating registry");
+            }
         }
 
     }
@@ -61,7 +68,11 @@ class Messenger implements CommunicationInterface{
     * @return      void
     */
     public void createPub(byte[] otherPub, CommunicationInterface other){
-        secure.createPub(otherPub, other);
+        try{
+            secure.createPub(otherPub, other);
+        }catch(Exception e){
+            System.out.println("error in createPub()");
+        }
     }
 
     /*
@@ -71,7 +82,11 @@ class Messenger implements CommunicationInterface{
     * @return      void
     */
     public void share(byte[] otherPub, byte[] otherParams){
-        secure.share(otherPub, otherParams);
+        try{
+            secure.share(otherPub, otherParams);
+        }catch(Exception e){
+            System.out.println("error in share()");
+        }
     }
 
     /*
@@ -81,7 +96,11 @@ class Messenger implements CommunicationInterface{
     * @return      void
     */
     public void createDecoder(byte[] params){
-        secure.createDecoder(params);
+        try{
+            secure.createDecoder(params);
+        }catch(Exception e){
+            System.out.println("error in createDecoder()");
+        }
     }
 
     /*
@@ -110,7 +129,11 @@ class Messenger implements CommunicationInterface{
     * @return      void
     */
     public void message(byte[] msg){
-        cont.addText(comm.get(0).getID() + ": " + secure.receive(msg) + "\n"); //display received messages
+        try{
+            cont.addText(comm.get(0).getID() + ": " + secure.receive(msg) + "\n"); //display received messages
+        }catch(Exception e){
+            System.out.println("message receiving error");
+        }
         //this could be expanded outside of the scope of the assignment
         //currently it assumes all messages are from the 1st connection
     }
@@ -125,7 +148,11 @@ class Messenger implements CommunicationInterface{
         cont.addText("you: " + msg + "\n"); //display the message for the user
 
         for(int i = 0; i < comm.size(); i++){ //sends message to all connections
-            comm.get(i).message(secure.send(msg)); //send a message
+            try{
+                comm.get(i).message(secure.send(msg)); //send a message
+            }catch(Exception e){
+                System.out.println("message sending error");
+            }
         }
 
     }
@@ -142,21 +169,35 @@ class Messenger implements CommunicationInterface{
             System.exit(0); //quit all threads (close application)
 
         }else if(msg.contains("disconnect")){ //if user wants to disconnect from a connection
-            
+
             cont.setCheckBoxes(false); //re-enable flag checkboxes
             for(int i = 0; i < comm.size(); i++){ //disconnect from all connections
-                comm.get(i).disconnect();
+                try{
+                    comm.get(i).disconnect();
+                }catch(RemoteException e){
+                    System.out.println("error disconnecting");
+                }
             }
             comm = new ArrayList<>(); //overwrite list of other Messengers
-            cont.addText("[Disconnected]\n"); //display connection status for user 
+            cont.addText("[Disconnected]\n"); //display connection status for user
 
         }else if(msg.contains("connect")){ //if user wants to make a connection
 
             String temp[] = msg.split(" "); //access the desired connection id
-            CommunicationInterface receiver = (CommunicationInterface) registry.lookup(temp[1]); //get from RMI
+            CommunicationInterface receiver = null;
+            try{
+                receiver = (CommunicationInterface) registry.lookup(temp[1]); //get from RMI
+            }catch(RemoteException | NotBoundException e){
+                System.out.println("RMI lookup error");
+            }
             cont.setCheckBoxes(true); //disable flag checkboxes
 
-            Boolean[] otherFlags = receiver.getFlags(); //get other Messenger security flags
+            Boolean[] otherFlags = null;
+            try{
+                otherFlags = receiver.getFlags(); //get other Messenger security flags
+            }catch(RemoteException e){
+                System.out.println("error getting flags of remote object");
+            }
             Boolean[] myFlags = secure.getFlags();
             if(!Arrays.equals(myFlags, otherFlags)){ //if flags are not the same
                 cont.addText("[Please ensure security flags are the same]\n"); //display connection status for user
@@ -164,14 +205,21 @@ class Messenger implements CommunicationInterface{
                 return; //exit the method early
             }
 
-            receiver.init(id); //initialize communication (add us to receiver's comm array)
+            try{
+                receiver.init(id); //initialize communication (add us to receiver's comm array)
+            }catch(RemoteException e){
+                System.out.println("Messenger initialization error");
+            }
             comm.add(receiver); //add to our own
             if(secure.getFlags()[0]){
-                secure.createSharedSecret(receiver); //ensure encryption is possible if wanted
+                try{
+                    secure.createSharedSecret(receiver); //ensure encryption is possible if wanted
+                }catch(Exception e){
+                    System.out.println("error in createSharedSecret()");
+                }
             }
             cont.addText("[Connected to " + temp[1] + "]\n"); //display connection status for user
             cont.addText("[Type ':disconnect' to remove connections from other messengers]\n"); //display disconnect prompt
-            System.out.println(secure.getFlags()[0] + " " + secure.getFlags()[1] + " " + secure.getFlags()[2]);
 
         }
 
@@ -185,7 +233,13 @@ class Messenger implements CommunicationInterface{
     public void init(String other){
 
         cont.setCheckBoxes(true); //disable flag checkboxes
-        CommunicationInterface sender = (CommunicationInterface) registry.lookup(other); //get from RMI
+        
+        CommunicationInterface sender = null;
+        try{
+            sender = (CommunicationInterface) registry.lookup(other); //get from RMI
+        }catch(RemoteException | NotBoundException e){
+            System.out.println("RMI lookup error");
+        }
         comm.add(sender); //add sender to our comm array
         cont.addText("[Connected to " + other + "]\n"); //display connection status for user
         cont.addText("[Type ':disconnect' to remove connections from other messengers]\n"); //display disconnect prompt
@@ -197,10 +251,10 @@ class Messenger implements CommunicationInterface{
     * @return      void
     */
     public void disconnect(){
-        
+
         cont.setCheckBoxes(false); //re-enable flag checkboxes
         comm = new ArrayList<>(); //overwrite list of other Messengers
-        cont.addText("[Disconnected]\n"); //display connection status for user 
+        cont.addText("[Disconnected]\n"); //display connection status for user
 
     }
 
@@ -222,14 +276,23 @@ class Messenger implements CommunicationInterface{
 
         cont = GUI.getInstance(self, "Secure Messenger ("+ id + ")"); //start the GUI and get the controller
 
-        CommunicationInterface stub = (CommunicationInterface) UnicastRemoteObject.exportObject(self, 0); //create RMI compatible stub
-        registry.bind(id, stub); //put self in RMI
+        try{
+            CommunicationInterface stub = (CommunicationInterface) UnicastRemoteObject.exportObject(self, 0); //create RMI compatible stub
+            registry.bind(id, stub); //put self in RMI
+        }catch(RemoteException | AlreadyBoundException e){
+            System.out.println("RMI binding/lookup error");
+        }
+
 
         cont.addText("[Your id is: " + id + "]\n");
         cont.addText("[Type ':q' to quit or ':connect <id>' to connect to another messenger]\n");
 
-        secure = new Security(self, id);
-        
+        try{
+            secure = new Security(self, id);
+        }catch(Exception e){
+            System.out.println("Security initialization error");
+        }
+
     }
 
 }
