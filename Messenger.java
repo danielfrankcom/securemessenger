@@ -3,6 +3,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.RemoteException; 
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.UUID;
 
@@ -92,6 +93,16 @@ class Messenger implements CommunicationInterface{
     }
 
     /*
+    * Wrapper function for Security class
+    * Allows secure pass through of security information
+    * @param       Boolean[] flags
+    * @return      void
+    */
+    public Boolean[] getFlags() throws Exception{
+        return secure.getFlags();
+    }
+
+    /*
     * Receive a message from an external object
     * @param       String message
     * @return      void
@@ -142,11 +153,22 @@ class Messenger implements CommunicationInterface{
             String temp[] = msg.split(" "); //access the desired connection id
             CommunicationInterface receiver = (CommunicationInterface) registry.lookup(temp[1]); //get from RMI
             cont.setCheckBoxes(true); //disable flag checkboxes
+
+            Boolean[] otherFlags = receiver.getFlags(); //get other Messenger security flags
+            Boolean[] myFlags = secure.getFlags();
+            if(!Arrays.equals(myFlags, otherFlags)){ //if flags are not the same
+                cont.addText("[Please ensure security flags are the same]\n"); //display connection status for user
+                cont.setCheckBoxes(false);
+                return; //exit the method early
+            }
+
             receiver.init(id); //initialize communication (add us to receiver's comm array)
             comm.add(receiver); //add to our own
-            secure.createSharedSecret(receiver);
+            if(secure.getFlags()[0]){
+                secure.createSharedSecret(receiver); //ensure encryption is possible if wanted
+            }
             cont.addText("[Connected to: " + temp[1] + "]\n"); //display connection status for user
-            System.out.println(secure.flags[0] + " " + secure.flags[1] + " " + secure.flags[2]);
+            System.out.println(secure.getFlags()[0] + " " + secure.getFlags()[1] + " " + secure.getFlags()[2]);
 
         }
 
@@ -200,7 +222,7 @@ class Messenger implements CommunicationInterface{
         registry.bind(id, stub); //put self in RMI
 
         cont.addText("[Your id is: " + id + "]\n");
-        cont.addText("[Type ':q' to quit or ':connect <id>' to connect to another messenger.]\n");
+        cont.addText("[Type ':q' to quit or ':connect <id>' to connect to another messenger]\n");
 
         secure = new Security(self, id);
         

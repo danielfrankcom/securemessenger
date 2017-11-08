@@ -203,6 +203,15 @@ class Security{
     public void setFlags(Boolean[] newFlags) throws Exception{
         flags = newFlags;
     }
+
+    /*
+    * Set flags from Messenger
+    * @param       Boolean[] flag
+    * @return      void
+    */
+    public Boolean[] getFlags() throws Exception{
+        return flags;
+    }
       
     /*
     * Get private key for the current messenger from a file

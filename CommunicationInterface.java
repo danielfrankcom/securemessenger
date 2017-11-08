@@ -9,6 +9,7 @@ public interface CommunicationInterface extends Remote {
     void share(byte[] otherPub, byte[] otherParams) throws Exception; //share the created public key and params with other party
     void createDecoder(byte[] params) throws Exception; //share encoder params to create decoder
     void message(byte[] msg) throws Exception; //send a message to the object
+    Boolean[] getFlags() throws Exception; //get flags from Security class of other Messenger
     void init(String other) throws Exception; //initialize communication with the object
     void disconnect() throws Exception; //disconnect from all connections
 } 
