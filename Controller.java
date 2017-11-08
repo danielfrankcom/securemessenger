@@ -41,7 +41,7 @@ public class Controller implements Initializable{
     * @return      void
     */
     @FXML
-    public void onEnter(ActionEvent a) throws Exception{
+    public void onEnter(ActionEvent a){
 
         String msg = input.getText(); //get field value
 
@@ -65,7 +65,7 @@ public class Controller implements Initializable{
     * @return      void
     */
     @FXML
-    public void onClickConfidentiality(ActionEvent a) throws Exception{
+    public void onClickConfidentiality(ActionEvent a){
         confidentialityChecked = !confidentialityChecked;
         messenger.setFlags(new Boolean[]{confidentialityChecked, integrityChecked, authenticationChecked});
     }
@@ -76,7 +76,7 @@ public class Controller implements Initializable{
     * @return      void
     */
     @FXML
-    public void onClickIntegrity(ActionEvent a) throws Exception{
+    public void onClickIntegrity(ActionEvent a){
         integrityChecked = !integrityChecked;
         messenger.setFlags(new Boolean[]{confidentialityChecked, integrityChecked, authenticationChecked});
     }
@@ -87,7 +87,7 @@ public class Controller implements Initializable{
     * @return      void
     */
     @FXML
-    public void onClickAuthentication(ActionEvent a) throws Exception{
+    public void onClickAuthentication(ActionEvent a){
         authenticationChecked = !authenticationChecked;
         messenger.setFlags(new Boolean[]{confidentialityChecked, integrityChecked, authenticationChecked});
     }
@@ -97,7 +97,7 @@ public class Controller implements Initializable{
     * @param       Boolean value (set checkbox disabled value to this)
     * @return      void
     */
-    public void setCheckBoxes(Boolean value) throws Exception{
+    public void setCheckBoxes(Boolean value){
         confidentiality.setDisable(value);
         integrity.setDisable(value);
         authentication.setDisable(value);

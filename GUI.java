@@ -20,7 +20,7 @@ public class GUI extends Application{
     * @return      void
     */
     @Override
-    public void start(Stage stage) throws Exception{
+    public void start(Stage stage){
 
         FileInputStream fxmlStream = new FileInputStream("messenger.fxml"); //load layout file
         FXMLLoader loader = new FXMLLoader();

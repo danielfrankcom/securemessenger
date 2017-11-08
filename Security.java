@@ -41,7 +41,7 @@ class Security{
     /*
     * Initialize the class
     */
-    public Security(CommunicationInterface parent, String parentID) throws Exception{
+    public Security(CommunicationInterface parent, String parentID){
 
         self = parent; //set instance variables
         id = parentID;
@@ -59,7 +59,7 @@ class Security{
     * @param       CommunicationInterface obj (party to send to)
     * @return      void
     */
-    public void createSharedSecret(CommunicationInterface obj) throws Exception{
+    public void createSharedSecret(CommunicationInterface obj){
 
         other = obj; //set instance var for use by other functions
 
@@ -81,7 +81,7 @@ class Security{
     * @param       byte[] otherPubEnc (other party's public key)
     * @return      void
     */
-    public void createPub(byte[] otherPubEnc, CommunicationInterface other) throws Exception{
+    public void createPub(byte[] otherPubEnc, CommunicationInterface other){
 
         KeyFactory keyFac = KeyFactory.getInstance("DH");
         X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(otherPubEnc); //create a spec to determine other public key
@@ -116,7 +116,7 @@ class Security{
     * @param       byte[] otherPubEnc (other party's public key)
     * @return      void
     */
-    public void share(byte[] otherPubEnc, byte[] otherParams) throws Exception{
+    public void share(byte[] otherPubEnc, byte[] otherParams){
         
         KeyFactory keyFac = KeyFactory.getInstance("DH");
         X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(otherPubEnc); //create a spec to determine other public key
@@ -142,7 +142,7 @@ class Security{
     * @param       byte[] params
     * @return      void
     */
-    public void createDecoder(byte[] params) throws Exception{
+    public void createDecoder(byte[] params){
 
         AlgorithmParameters aesParams = AlgorithmParameters.getInstance("AES");
         aesParams.init(params);
@@ -156,7 +156,7 @@ class Security{
     * @param       String plaintext
     * @return      byte[] ciphertext
     */
-    public byte[] encrypt(String plaintext) throws Exception{
+    public byte[] encrypt(String plaintext){
 
         return enCipher.doFinal(plaintext.getBytes());
 
@@ -167,7 +167,7 @@ class Security{
     * @param       String msg (to make sendable)
     * @return      btye[] msg (sendable)
     */
-    public byte[] send(String msg) throws Exception{
+    public byte[] send(String msg){
         if(flags[0]){
             return encrypt(msg);
         }else{
@@ -180,7 +180,7 @@ class Security{
     * @param       byte[] ciphertext
     * @return      String plaintext
     */
-    public String decrypt(byte[] ciphertext) throws Exception{
+    public String decrypt(byte[] ciphertext){
 
         return new String(deCipher.doFinal(ciphertext));
 
@@ -191,7 +191,7 @@ class Security{
     * @param       byte[] msg (to make sendable)
     * @return      String msg (sendable)
     */
-    public String receive(byte[] msg) throws Exception{
+    public String receive(byte[] msg){
         if(flags[0]){
             return decrypt(msg);
         }else{
@@ -204,7 +204,7 @@ class Security{
     * @param       Boolean[] flag
     * @return      void
     */
-    public void setFlags(Boolean[] newFlags) throws Exception{
+    public void setFlags(Boolean[] newFlags){
         flags = newFlags;
     }
 
@@ -213,7 +213,7 @@ class Security{
     * @param       Boolean[] flag
     * @return      void
     */
-    public Boolean[] getFlags() throws Exception{
+    public Boolean[] getFlags(){
         return flags;
     }
       
@@ -221,7 +221,7 @@ class Security{
     * Get private key for the current messenger from a file
     * @return      PrivateKey
     */
-    private PrivateKey getPrivate() throws Exception {
+    private PrivateKey getPrivate() {
   
         byte[] key = Files.readAllBytes(Paths.get("keys/private-" + id + "/private.der"));
         PKCS8EncodedKeySpec PKCS8KeySpec = new PKCS8EncodedKeySpec(key);
@@ -236,7 +236,7 @@ class Security{
     * @param       String messenger (id of messenger to get public key for)
     * @return      PublicKey
     */
-    private PublicKey getPublic(String messenger) throws Exception {
+    private PublicKey getPublic(String messenger) {
 
         byte[] key = Files.readAllBytes(Paths.get("keys/public/" + messenger + ".der"));
         X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(key);

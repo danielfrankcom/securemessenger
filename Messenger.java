@@ -25,7 +25,7 @@ class Messenger implements CommunicationInterface{
     /*
     * Initialize the Messenger
     */
-    public Messenger() throws Exception{
+    public Messenger(){
 
         comm = new ArrayList<>(); //initialize instance variable
 
@@ -60,7 +60,7 @@ class Messenger implements CommunicationInterface{
     * @param       byte[] otherPub (public key)
     * @return      void
     */
-    public void createPub(byte[] otherPub, CommunicationInterface other) throws Exception{
+    public void createPub(byte[] otherPub, CommunicationInterface other){
         secure.createPub(otherPub, other);
     }
 
@@ -70,7 +70,7 @@ class Messenger implements CommunicationInterface{
     * @param       byte[] otherPub (public key)
     * @return      void
     */
-    public void share(byte[] otherPub, byte[] otherParams) throws Exception{
+    public void share(byte[] otherPub, byte[] otherParams){
         secure.share(otherPub, otherParams);
     }
 
@@ -80,7 +80,7 @@ class Messenger implements CommunicationInterface{
     * @param       byte[] otherPub (public key)
     * @return      void
     */
-    public void createDecoder(byte[] params) throws Exception{
+    public void createDecoder(byte[] params){
         secure.createDecoder(params);
     }
 
@@ -90,7 +90,7 @@ class Messenger implements CommunicationInterface{
     * @param       Boolean[] flags
     * @return      void
     */
-    public void setFlags(Boolean[] flags) throws Exception{
+    public void setFlags(Boolean[] flags){
         secure.setFlags(flags);
     }
 
@@ -100,7 +100,7 @@ class Messenger implements CommunicationInterface{
     * @param       Boolean[] flags
     * @return      void
     */
-    public Boolean[] getFlags() throws Exception{
+    public Boolean[] getFlags(){
         return secure.getFlags();
     }
 
@@ -109,7 +109,7 @@ class Messenger implements CommunicationInterface{
     * @param       String message
     * @return      void
     */
-    public void message(byte[] msg) throws Exception{
+    public void message(byte[] msg){
         cont.addText(comm.get(0).getID() + ": " + secure.receive(msg) + "\n"); //display received messages
         //this could be expanded outside of the scope of the assignment
         //currently it assumes all messages are from the 1st connection
@@ -120,7 +120,7 @@ class Messenger implements CommunicationInterface{
     * @param       String message
     * @return      void
     */
-    public void typed(String msg) throws Exception{
+    public void typed(String msg){
 
         cont.addText("you: " + msg + "\n"); //display the message for the user
 
@@ -135,7 +135,7 @@ class Messenger implements CommunicationInterface{
     * @param       String command
     * @return      void
     */
-    public void command(String msg) throws Exception{
+    public void command(String msg){
 
         if(msg.equals("exit") || msg.equals("quit") || msg.equals("q")){ //if user wants to quit
 
@@ -182,7 +182,7 @@ class Messenger implements CommunicationInterface{
     * @param       String senderID
     * @return      void
     */
-    public void init(String other) throws Exception{
+    public void init(String other){
 
         cont.setCheckBoxes(true); //disable flag checkboxes
         CommunicationInterface sender = (CommunicationInterface) registry.lookup(other); //get from RMI
@@ -196,7 +196,7 @@ class Messenger implements CommunicationInterface{
     * Disconnect from a sender
     * @return      void
     */
-    public void disconnect() throws Exception{
+    public void disconnect(){
         
         cont.setCheckBoxes(false); //re-enable flag checkboxes
         comm = new ArrayList<>(); //overwrite list of other Messengers
@@ -208,7 +208,7 @@ class Messenger implements CommunicationInterface{
     * Main method used to run the class
     * @return      void
     */
-    public static void main(String[] args) throws Exception{
+    public static void main(String[] args){
 
         Messenger self = new Messenger(); //create a Messenger object
 
