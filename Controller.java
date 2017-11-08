@@ -66,7 +66,8 @@ public class Controller implements Initializable{
     */
     @FXML
     public void onClickConfidentiality(ActionEvent a) throws Exception{
-        System.out.println("confidentiality");
+        confidentialityChecked = !confidentialityChecked;
+        System.out.println("New conf val: " + confidentialityChecked);
     }
 
     /*
@@ -76,7 +77,8 @@ public class Controller implements Initializable{
     */
     @FXML
     public void onClickIntegrity(ActionEvent a) throws Exception{
-        System.out.println("integrity");
+        integrityChecked = !integrityChecked;
+        System.out.println("New integ val: " + integrityChecked);
     }
 
     /*
@@ -86,7 +88,8 @@ public class Controller implements Initializable{
     */
     @FXML
     public void onClickAuthentication(ActionEvent a) throws Exception{
-        System.out.println("authentication");
+        authenticationChecked = !authenticationChecked;
+        System.out.println("New auth val: " + authenticationChecked);
     }
 
     /*
