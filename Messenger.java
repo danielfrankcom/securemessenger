@@ -196,6 +196,10 @@ class Messenger implements CommunicationInterface{
         }else if(msg.contains("connect")){ //if user wants to make a connection
 
             String temp[] = msg.split(" "); //access the desired connection id
+            if(temp.length == 1){
+                cont.addText("[Invalid connection]\n");
+                return;
+            }
             CommunicationInterface receiver = null;
             if(temp[1].equals(id)){
                 cont.addText("[Cannot connect to self]\n");
@@ -208,7 +212,8 @@ class Messenger implements CommunicationInterface{
             try{
                 receiver = (CommunicationInterface) registry.lookup(temp[1]); //get from RMI
             }catch(RemoteException | NotBoundException e){
-                System.out.println("RMI lookup error");
+                cont.addText("[User does not exist]\n");
+                return;
             }
             cont.setCheckBoxes(true); //disable flag checkboxes
 
