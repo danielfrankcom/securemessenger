@@ -3,6 +3,8 @@
 
 This project was built for SENG 360 (Security Engineering) at the University of Victoria. The full assignment requirements can be found in `requirements.pdf`.
 
+For extensive method documentation, see the `/docs/` folder.
+
 The code was written by Kyle Thorpe and Daniel Frankcom.
 
 1. To run the code, first compile with `javac *.java`
