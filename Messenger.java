@@ -246,7 +246,16 @@ class Messenger implements CommunicationInterface{
             }
             cont.addText("[Connected to " + temp[1] + "]\n"); //display connection status for user
             cont.addText("[Type ':disconnect' to remove connections from other messengers]\n"); //display disconnect prompt
+            cont.addText("[Type ':auth <password>' to authenticate yourself.]\n"); //display authenticate prompt
 
+        }else if(msg.contains("auth")){ // if user would like to authenticate.
+          String temp[] = msg.split(" "); //access the desired password
+          if(temp.length == 1){
+              cont.addText("[Invalid password]\n");
+              return;
+          }
+          String pass = temp[1];
+          secure.authenticate(id,pass);
         }
 
     }

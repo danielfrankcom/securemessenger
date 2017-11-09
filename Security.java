@@ -61,10 +61,14 @@ class Security{
     PublicKey myPub;
 
     /*
-    * Stores the 3 security flas in the following order: confidentiality, integrity, authentication
+    * Stores the 3 security flags in the following order: confidentiality, integrity, authentication
     */
     private static Boolean[] flags;
 
+    /*
+    * Stores the boolean of whether the user has authenticated successfully as the id of our messenger parent.
+    */
+    private Boolean authenticated = false;
     /**
     * Initialize Security
     * @param parent object of caller
@@ -311,7 +315,7 @@ class Security{
     * @param inputData data to encrypt
     * @return encrypted checksum
     */
-    public byte[] encryptCheckSum(String receiver, byte[] inputData) throws Exception {
+    private byte[] encryptCheckSum(String receiver, byte[] inputData) throws Exception {
 
         PublicKey key = getPublic(receiver);
         Cipher cipher = Cipher.getInstance("RSA");
@@ -326,7 +330,7 @@ class Security{
     * @param checksum checksum to decrypt
     * @return decrypted checksum
     */
-    public byte[] decryptCheckSum(byte[] checksum) throws Exception {
+    private byte[] decryptCheckSum(byte[] checksum) throws Exception {
 
         PrivateKey key = getPrivate();
         Cipher cipher = Cipher.getInstance("RSA");
