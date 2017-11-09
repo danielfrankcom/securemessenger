@@ -351,16 +351,4 @@ class Security{
         return false;
 
     }
-    /**private void testingMethod() throws Exception{
-        System.out.println("-------------------------");
-        String message = "Hello";
-        byte[] checksum = generateCheckSum(message);
-        byte[] encryptedCheckSum = encryptCheckSum("Server",checksum);
-        System.out.println("Unencrypted checksum: "+checksum);
-        System.out.println("Encrypted checksum: "+encryptedCheckSum);
-        byte[] decryptedChecksum = decryptCheckSum(encryptedCheckSum);
-        System.out.println("Decrypted checksum: "+decryptedChecksum);
-        System.out.println("-------------------------");
-    }
-    **/
 }
