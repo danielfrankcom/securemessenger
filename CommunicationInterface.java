@@ -25,7 +25,7 @@ public interface CommunicationInterface extends Remote {
     /**
     * Send a message to the object
     */
-    void message(byte[] msg) throws RemoteException;
+    void message(byte[] msg, byte[] checksum) throws RemoteException;
     /**
     * Get flags from Security class of other Messenger
     */
