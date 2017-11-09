@@ -12,6 +12,7 @@ import javax.crypto.interfaces.DHPublicKey;
 import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -192,7 +193,6 @@ class Security{
     * @return sendable message
     */
     public byte[][] send(String msg, String receiver) throws Exception{
-      testingMethod();
       byte[] msg_ret = msg.getBytes();
       byte[] checksum_ret = new byte[0];
       if(flags[0]){
@@ -200,7 +200,6 @@ class Security{
       }
       if(flags[1]){
         checksum_ret = encryptCheckSum(receiver, generateCheckSum(msg));
-        System.out.println("Encrypted checksum in SEND: "+checksum_ret);
       }
       byte[][] ret = new byte[2][];
       ret[0] = msg_ret;
@@ -232,19 +231,14 @@ class Security{
           ret = new String(msg);
       }
       if(flags[1]){
-        System.out.println("Encrypted Checksum in receive: "+checksum);
         byte[] decrypted_cs = decryptCheckSum(checksum);
-        System.out.println("Decrypted Checksum in receive: "+decrypted_cs);
-        System.out.println("Ret in receive: "+ret);
         if(compareCheckSum(decrypted_cs, ret)){
-          System.out.println("Debug 000: "+ret);
           return ret;
         }
         else{
           return "Checksum does not match";
         }
       }
-      System.out.println("Debug 001: "+ret);
       return ret;
     }
 
@@ -296,7 +290,7 @@ class Security{
         return keyFac.generatePublic(x509KeySpec);
 
     }
-    
+
     /**
     * Create a checksum for a specific message
     * @param message message to generate a checksum for
@@ -308,7 +302,7 @@ class Security{
         ByteBuffer bb = ByteBuffer.allocate(4);
         bb.putInt(m);
         return bb.array();
-        
+
     }
 
     /**
@@ -349,17 +343,15 @@ class Security{
     * @return true if same, false otherwise
     */
     private boolean compareCheckSum(byte[] checksum, String message){
-    
+
         byte[] temp_checksum = generateCheckSum(message);
-        if(temp_checksum == checksum){
+        if(Arrays.equals(temp_checksum, checksum)){
             return true;
         }
-        System.out.println("Temp checksum: "+temp_checksum);
-        System.out.println("CHECKSUM: "+checksum);
         return false;
 
     }
-    private void testingMethod() throws Exception{
+    /**private void testingMethod() throws Exception{
         System.out.println("-------------------------");
         String message = "Hello";
         byte[] checksum = generateCheckSum(message);
@@ -370,5 +362,5 @@ class Security{
         System.out.println("Decrypted checksum: "+decryptedChecksum);
         System.out.println("-------------------------");
     }
-
+    **/
 }

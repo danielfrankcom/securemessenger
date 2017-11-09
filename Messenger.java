@@ -95,7 +95,7 @@ class Messenger implements CommunicationInterface{
     /**
     * Wrapper function for Security class, allows secure pass through of security information
     * @param otherPub public key that other has created
-    * @param otherParams created cipher parameters 
+    * @param otherParams created cipher parameters
     */
     public void share(byte[] otherPub, byte[] otherParams){
 
@@ -147,8 +147,6 @@ class Messenger implements CommunicationInterface{
     */
     public void message(byte[] msg, byte[] checksum){
 
-        System.out.println("Received: " + new String(msg));
-
         try{
             cont.addText(comm.getID() + ": " + secure.receive(msg, checksum) + "\n"); //display received messages
         }catch(Exception e){
@@ -169,7 +167,7 @@ class Messenger implements CommunicationInterface{
             byte[][] info = secure.send(msg, comm.getID());
             comm.message(info[0],info[1]); //send a message
         }catch(Exception e){
-            System.out.println("message sending error");
+            System.out.println(e+"message sending error");
         }
 
     }
