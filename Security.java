@@ -6,6 +6,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.security.MessageDigest;
 import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
 import javax.crypto.interfaces.DHPublicKey;
@@ -13,6 +14,10 @@ import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -205,6 +210,12 @@ class Security{
       if(flags[1]){
         checksum_ret = encryptCheckSum(receiver, generateCheckSum(msg));
       }
+      if(flags[2]){
+        if(!authenticated){
+          System.out.println(id+" attempted to send a message while unauthenticated.");
+          return null;
+        }
+      }
       byte[][] ret = new byte[2][];
       ret[0] = msg_ret;
       ret[1] = checksum_ret;
@@ -354,5 +365,55 @@ class Security{
         }
         return false;
 
+    }
+
+    public boolean authenticate(String id, String pass)throws Exception{
+      byte[] bom = pass.getBytes("UTF-8");
+      MessageDigest md = MessageDigest.getInstance("MD5");
+      byte[] hash = md.digest(bom);
+      String attempted_hash = toHexString(hash);
+      String stored_hash = getStoredHash(id);
+      if(attempted_hash.equals(stored_hash)){
+        authenticated = true;
+        System.out.println(id+" authenticated successfully.");
+        return true;
+      }
+      else{
+        System.out.println("Attempted password hash: "+attempted_hash);
+        System.out.println("Stored password hash: "+stored_hash);
+        System.out.println(id+" failed to authenticate.");
+        return false;
+      }
+    }
+    private String getStoredHash(String id){
+      String line;
+      try {
+        BufferedReader bufferreader = new BufferedReader(new FileReader("users"));
+        line = bufferreader.readLine();
+        while (line != null) {
+            String[] el = line.split(":");
+            if(el[0].equals(id)){
+              return el[1];
+            }
+            line = bufferreader.readLine();
+        }
+      } catch (FileNotFoundException ex) {
+        ex.printStackTrace();
+      } catch (IOException ex) {
+        ex.printStackTrace();
+      }
+      return "";
+    }
+    private String toHexString(byte[] bytes) {
+      StringBuilder hexString = new StringBuilder();
+
+      for (int i = 0; i < bytes.length; i++) {
+          String hex = Integer.toHexString(0xFF & bytes[i]);
+          if (hex.length() == 1) {
+              hexString.append('0');
+          }
+          hexString.append(hex);
+      }
+      return hexString.toString();
     }
 }

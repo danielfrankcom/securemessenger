@@ -162,15 +162,17 @@ class Messenger implements CommunicationInterface{
     * @param msg the message that the user has typed
     */
     public void typed(String msg){
-
-        cont.addText("you: " + msg + "\n"); //display the message for the user
         try{
             byte[][] info = secure.send(msg, comm.getID());
+            if(info == null && secure.getFlags()[2]){
+              cont.addText("[You must authenticate before sending a message]\n");
+              return;
+            }
             comm.message(info[0],info[1]); //send a message
         }catch(Exception e){
             System.out.println(e+"message sending error");
         }
-
+        cont.addText("you: " + msg + "\n"); //display the message for the user
     }
 
     /**
@@ -247,7 +249,7 @@ class Messenger implements CommunicationInterface{
             }
             cont.addText("[Connected to " + temp[1] + "]\n"); //display connection status for user
             cont.addText("[Type ':disconnect' to remove connections from other messengers]\n"); //display disconnect prompt
-            cont.addText("[Type ':auth <password>' to authenticate yourself.]\n"); //display authenticate prompt
+            cont.addText("[Type ':auth <password>' to authenticate yourself]\n"); //display authenticate prompt
 
         }else if(msg.contains("auth")){ // if user would like to authenticate.
           String temp[] = msg.split(" "); //access the desired password
@@ -256,7 +258,18 @@ class Messenger implements CommunicationInterface{
               return;
           }
           String pass = temp[1];
-          secure.authenticate(id,pass);
+          try{
+            if(secure.authenticate(id,pass)){
+              cont.addText("[Authenticated successfully as "+id+"]\n");
+            }
+            else{
+              cont.addText("[Authenticated failed]\n");
+            }
+          }
+          catch(Exception e){
+            System.out.println("Error calling authenticate.");
+            cont.addText("[Error authenticating]\n");
+          }
         }
 
     }
@@ -278,7 +291,7 @@ class Messenger implements CommunicationInterface{
         comm = sender; //save sender
         cont.addText("[Connected to " + other + "]\n"); //display connection status for user
         cont.addText("[Type ':disconnect' to remove connections from other messengers]\n"); //display disconnect prompt
-
+        cont.addText("[Type ':auth <password>' to authenticate yourself]\n"); //display authenticate prompt
     }
 
     /**
