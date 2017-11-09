@@ -20,7 +20,7 @@ import java.util.UUID;
 class Messenger implements CommunicationInterface{
 
     private static Registry registry; //the registry that stores other Messengers
-    private ArrayList<CommunicationInterface> comm; //who are we currently communicating with
+    private CommunicationInterface comm; //who are we currently communicating with
     private static Controller cont; //GUI controller
     private static Security secure; //Security object for cryptography
     private static String id; //the id of our Messenger
@@ -30,7 +30,7 @@ class Messenger implements CommunicationInterface{
     */
     public Messenger(){
 
-        comm = new ArrayList<>(); //initialize instance variable
+        comm = null;
 
         try{
             registry = LocateRegistry.createRegistry(1099); //try to create registry
@@ -187,24 +187,35 @@ class Messenger implements CommunicationInterface{
         }else if(msg.contains("disconnect")){ //if user wants to disconnect from a connection
 
             cont.setCheckBoxes(false); //re-enable flag checkboxes
-            for(int i = 0; i < comm.size(); i++){ //disconnect from all connections
-                try{
-                    comm.get(i).disconnect();
-                }catch(RemoteException e){
-                    System.out.println("error disconnecting");
-                }
+            try{
+                comm.disconnect();
+            }catch(RemoteException e){
+                System.out.println("error disconnecting");
             }
-            comm = new ArrayList<>(); //overwrite list of other Messengers
+            comm = null; //overwrite list of other Messengers
             cont.addText("[Disconnected]\n"); //display connection status for user
 
         }else if(msg.contains("connect")){ //if user wants to make a connection
 
             String temp[] = msg.split(" "); //access the desired connection id
+            if(temp.length == 1){
+                cont.addText("[Invalid connection]\n");
+                return;
+            }
             CommunicationInterface receiver = null;
+            if(temp[1].equals(id)){
+                cont.addText("[Cannot connect to self]\n");
+                return;
+            }
+            if(comm != null){
+                cont.addText("[Please disconnect first]\n");
+                return;
+            }
             try{
                 receiver = (CommunicationInterface) registry.lookup(temp[1]); //get from RMI
             }catch(RemoteException | NotBoundException e){
-                System.out.println("RMI lookup error");
+                cont.addText("[User does not exist]\n");
+                return;
             }
             cont.setCheckBoxes(true); //disable flag checkboxes
 
@@ -222,11 +233,12 @@ class Messenger implements CommunicationInterface{
             }
 
             try{
-                receiver.init(id); //initialize communication (add us to receiver's comm array)
+
+                receiver.init(id); //initialize communication (add us to receiver's comm variable)
             }catch(RemoteException e){
                 System.out.println("Messenger initialization error");
             }
-            comm.add(receiver); //add to our own
+            comm = receiver; //add to our own
             if(secure.getFlags()[0]){
                 try{
                     secure.createSharedSecret(receiver); //ensure encryption is possible if wanted
@@ -256,7 +268,7 @@ class Messenger implements CommunicationInterface{
         }catch(RemoteException | NotBoundException e){
             System.out.println("RMI lookup error");
         }
-        comm.add(sender); //add sender to our comm array
+        comm = sender; //save sender
         cont.addText("[Connected to " + other + "]\n"); //display connection status for user
         cont.addText("[Type ':disconnect' to remove connections from other messengers]\n"); //display disconnect prompt
 
@@ -269,7 +281,7 @@ class Messenger implements CommunicationInterface{
     public void disconnect(){
 
         cont.setCheckBoxes(false); //re-enable flag checkboxes
-        comm = new ArrayList<>(); //overwrite list of other Messengers
+        comm = null; //overwrite comm variable
         cont.addText("[Disconnected]\n"); //display connection status for user
 
     }
