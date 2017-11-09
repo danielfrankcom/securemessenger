@@ -70,7 +70,7 @@ class Security{
         KeyPairGenerator kPairGen = KeyPairGenerator.getInstance("DH");
         kPairGen.initialize(2048);
         KeyPair kPair = kPairGen.generateKeyPair(); //generate diffie-hellman public/private pair
-        
+
         keyAgree = KeyAgreement.getInstance("DH"); //init KeyAgreement instance for use in generating secret
         keyAgree.init(kPair.getPrivate());
 
@@ -121,7 +121,7 @@ class Security{
     * @return      void
     */
     public void share(byte[] otherPubEnc, byte[] otherParams) throws Exception{
-        
+
         KeyFactory keyFac = KeyFactory.getInstance("DH");
         X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(otherPubEnc); //create a spec to determine other public key
         PublicKey otherPub = keyFac.generatePublic(x509KeySpec); //get other public key
@@ -228,13 +228,13 @@ class Security{
         return flags;
 
     }
-      
+
     /*
     * Get private key for the current messenger from a file
     * @return      PrivateKey
     */
     private PrivateKey getPrivate() throws Exception{
-  
+
         byte[] key = Files.readAllBytes(Paths.get("keys/private-" + id + "/private.der"));
         PKCS8EncodedKeySpec PKCS8KeySpec = new PKCS8EncodedKeySpec(key);
         KeyFactory keyFac = KeyFactory.getInstance("RSA");
@@ -256,6 +256,30 @@ class Security{
 
         return keyFac.generatePublic(x509KeySpec);
 
+    }
+    private String generateCheckSum(String message){
+      return message.hashCode();
+    }
+
+    public static byte[] encryptCheckSum(String receiver, byte[] inputData) throws Exception {
+        PublicKey key = getPublic(receiver);
+        Cipher cipher = Cipher.getInstance("RSA");
+        cipher.init(Cipher.PUBLIC_KEY, key);
+        byte[] encryptedBytes = cipher.doFinal(inputData);
+        return encryptedBytes;
+    }
+    public static byte[] decryptCheckSum(byte[] checksum) throws Exception {
+        PrivateKey key = getPrivate();
+        Cipher cipher = Cipher.getInstance("RSA");
+        cipher.init(Cipher.PRIVATE_KEY, key);
+        byte[] decryptedBytes = cipher.doFinal(checksum);
+        return decryptedBytes;
+    }
+    private boolean compareCheckSum(byte[] checksum, String message){
+      if(generateCheckSum(message).equals(checksum)){
+        return true;
+      }
+      return false;
     }
 
 }
