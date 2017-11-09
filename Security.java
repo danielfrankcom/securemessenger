@@ -326,7 +326,7 @@ class Security{
     }
 
     /**
-    * Encrypt a given checksum
+    * Decrypt a given checksum
     * @param checksum checksum to decrypt
     * @return decrypted checksum
     */
