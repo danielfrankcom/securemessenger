@@ -197,6 +197,10 @@ class Messenger implements CommunicationInterface{
 
             String temp[] = msg.split(" "); //access the desired connection id
             CommunicationInterface receiver = null;
+            if(temp[1].equals(id)){
+                cont.addText("[Cannot connect to self]");
+                return;
+            }
             try{
                 receiver = (CommunicationInterface) registry.lookup(temp[1]); //get from RMI
             }catch(RemoteException | NotBoundException e){
@@ -218,7 +222,8 @@ class Messenger implements CommunicationInterface{
             }
 
             try{
-                receiver.init(id); //initialize communication (add us to receiver's comm array)
+                
+                receiver.init(id); //initialize communication (add us to receiver's comm variable)
             }catch(RemoteException e){
                 System.out.println("Messenger initialization error");
             }
