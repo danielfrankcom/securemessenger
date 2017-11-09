@@ -148,7 +148,7 @@ class Messenger implements CommunicationInterface{
     public void message(byte[] msg, byte[] checksum){
 
         try{
-            cont.addText(comm.get(0).getID() + ": " + secure.receive(msg, checksum) + "\n"); //display received messages
+            cont.addText(comm.getID() + ": " + secure.receive(msg, checksum) + "\n"); //display received messages
         }catch(Exception e){
             System.out.println("message receiving error");
         }
@@ -162,13 +162,11 @@ class Messenger implements CommunicationInterface{
     public void typed(String msg){
 
         cont.addText("you: " + msg + "\n"); //display the message for the user
-        for(int i = 0; i < comm.size(); i++){ //sends message to all connections
-            try{
-              byte[][] info = secure.send(msg, comm.get(0).getID());
-              comm.get(i).message(info[0],info[1]); //send a message
-            }catch(Exception e){
-                System.out.println("message sending error");
-            }
+        try{
+            byte[][] info = secure.send(msg, comm.getID());
+            comm.message(info[0],info[1]); //send a message
+        }catch(Exception e){
+            System.out.println("message sending error");
         }
 
     }
