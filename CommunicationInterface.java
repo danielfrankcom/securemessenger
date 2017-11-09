@@ -4,7 +4,7 @@ import java.rmi.RemoteException;
 /**
 * Defines what methods are accessible over RMI
 */
-public interface CommunicationInterface extends Remote { 
+public interface CommunicationInterface extends Remote {
 
     /**
     * Get the id string of the object
@@ -39,4 +39,4 @@ public interface CommunicationInterface extends Remote {
     */
     void disconnect() throws RemoteException;
     
-} 
+}
