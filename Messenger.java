@@ -12,20 +12,33 @@ import java.util.Scanner;
 
 import java.util.UUID;
 
-/*
-* Entry point for peer-to-peer communication
-* Can wait for connection or initialize a connection
-* Receives messages from connected Messengers or can send messages
+/**
+* Entry point for peer-to-peer communication, can wait for connection or initialize a connection, receives messages from connected Messengers or can send messages
 */
 class Messenger implements CommunicationInterface{
 
-    private static Registry registry; //the registry that stores other Messengers
-    private CommunicationInterface comm; //who are we currently communicating with
-    private static Controller cont; //GUI controller
-    private static Security secure; //Security object for cryptography
-    private static String id; //the id of our Messenger
+    /**
+    * The registry that stores other Messengers
+    */
+    private static Registry registry;
+    /**
+    * Who are we currently communicating with
+    */
+    private CommunicationInterface comm;
+    /**
+    * GUI controller
+    */
+    private static Controller cont;
+    /**
+    * Security object for cryptography
+    */
+    private static Security secure;
+    /**
+    * The id of our Messenger
+    */
+    private static String id;
 
-    /*
+    /**
     * Initialize the Messenger
     */
     public Messenger(){
@@ -44,9 +57,9 @@ class Messenger implements CommunicationInterface{
 
     }
 
-    /*
+    /**
     * Allows other instances to access our ID
-    * @return      String id
+    * @return id string
     */
     public String getID(){
         
@@ -54,10 +67,9 @@ class Messenger implements CommunicationInterface{
 
     }
 
-    /*
+    /**
     * Allows main() to set our instance ID
-    * @param      String id
-    * @return     void
+    * @param newID id to replace our current one with
     */
     public void setID(String newID){
 
@@ -65,11 +77,10 @@ class Messenger implements CommunicationInterface{
 
     }
 
-    /*
-    * Wrapper function for Security class
-    * Allows secure pass through of security information
-    * @param       byte[] otherPub (public key)
-    * @return      void
+    /**
+    * Wrapper function for Security class, allows secure pass through of security information
+    * @param otherPub public key that other has created
+    * @param other object of sender
     */
     public void createPub(byte[] otherPub, CommunicationInterface other){
 
@@ -81,11 +92,10 @@ class Messenger implements CommunicationInterface{
 
     }
 
-    /*
-    * Wrapper function for Security class
-    * Allows secure pass through of security information
-    * @param       byte[] otherPub (public key)
-    * @return      void
+    /**
+    * Wrapper function for Security class, allows secure pass through of security information
+    * @param otherPub public key that other has created
+    * @param otherParams created cipher parameters 
     */
     public void share(byte[] otherPub, byte[] otherParams){
 
@@ -97,11 +107,9 @@ class Messenger implements CommunicationInterface{
 
     }
 
-    /*
-    * Wrapper function for Security class
-    * Allows secure pass through of security information
-    * @param       byte[] otherPub (public key)
-    * @return      void
+    /**
+    * Wrapper function for Security class, allows secure pass through of security information
+    * @param params created cipher parameters
     */
     public void createDecoder(byte[] params){
 
@@ -113,11 +121,9 @@ class Messenger implements CommunicationInterface{
 
     }
 
-    /*
-    * Wrapper function for Security class
-    * Allows secure pass through of security information
-    * @param       Boolean[] flags
-    * @return      void
+    /**
+    * Wrapper function for Security class, allows secure pass through of security information
+    * @param flags set security flags for the object
     */
     public void setFlags(Boolean[] flags){
 
@@ -125,11 +131,9 @@ class Messenger implements CommunicationInterface{
 
     }
 
-    /*
-    * Wrapper function for Security class
-    * Allows secure pass through of security information
-    * @param       Boolean[] flags
-    * @return      void
+    /**
+    * Wrapper function for Security class, allows secure pass through of security information
+    * @return the current security flags for the object
     */
     public Boolean[] getFlags(){
 
@@ -137,10 +141,9 @@ class Messenger implements CommunicationInterface{
     
     }
 
-    /*
+    /**
     * Receive a message from an external object
-    * @param       String message
-    * @return      void
+    * @param msg message received
     */
     public void message(byte[] msg){
 
@@ -149,15 +152,12 @@ class Messenger implements CommunicationInterface{
         }catch(Exception e){
             System.out.println("message receiving error");
         }
-        //this could be expanded outside of the scope of the assignment
-        //currently it assumes all messages are from the 1st connection
 
     }
 
-    /*
+    /**
     * Sent from controller, user has typed a message to send
-    * @param       String message
-    * @return      void
+    * @param msg the message that the user has typed
     */
     public void typed(String msg){
 
@@ -171,10 +171,9 @@ class Messenger implements CommunicationInterface{
 
     }
 
-    /*
+    /**
     * Sent from controller, user has typed a command to run
-    * @param       String command
-    * @return      void
+    * @param msg command to run
     */
     public void command(String msg){
 
@@ -251,10 +250,9 @@ class Messenger implements CommunicationInterface{
 
     }
 
-    /*
+    /**
     * Initialize communication with sender
-    * @param       String senderID
-    * @return      void
+    * @param other id of sender
     */
     public void init(String other){
 
@@ -272,9 +270,8 @@ class Messenger implements CommunicationInterface{
 
     }
 
-    /*
+    /**
     * Disconnect from a sender
-    * @return      void
     */
     public void disconnect(){
 
@@ -284,9 +281,9 @@ class Messenger implements CommunicationInterface{
 
     }
 
-    /*
+    /**
     * Main method used to run the class
-    * @return      void
+    * @param args command line arguments
     */
     public static void main(String[] args){
 
