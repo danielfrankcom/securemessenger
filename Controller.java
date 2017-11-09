@@ -7,38 +7,61 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 
-/*
-* Controller for GUI, handles all changes that user will see
-* Can be updated externally, and notifies Messenger of typed messages/commands
+/**
+* Controller for GUI, handles all changes that user will see, can be updated externally, notifies Messenger of typed messages/commands
 */
 public class Controller implements Initializable{
 
-    @FXML TextArea messages; //these 2 are passed from the FXML (GUI) file
+    /**
+    * Message display area
+    */
+    @FXML TextArea messages;
+    /**
+    * User input field
+    */
     @FXML TextField input;
+    /**
+    * Confidentiality checkbox
+    */
     @FXML CheckBox confidentiality;
+    /**
+    * Confidentiality boolean
+    */
     Boolean confidentialityChecked = false;
+    /**
+    * Integrity checkbox
+    */
     @FXML CheckBox integrity;
+    /**
+    * Integrity boolean
+    */
     Boolean integrityChecked = false;
+    /**
+    * Authentication checkbox
+    */
     @FXML CheckBox authentication;
+    /**
+    * Authentication checkbox
+    */
     Boolean authenticationChecked = false;
-
-    private Messenger messenger; //this stores the Messenger that owns the GUI
+    /**
+    * Messenger object to store the parent
+    */
+    private Messenger messenger;
     
-    /*
+    /**
     * Necessary method that runs when GUI is initialized
-    * @param       URL url (passed from JavaFX)
-    * @param       ResourceBundle rb (passed from JavaFX)
-    * @return      void
+    * @param url passed from JavaFX
+    * @param rb passed from JavaFX
     */
     @Override
     public void initialize(URL url, ResourceBundle rb){
         //don't really have anything to do, but necessary to override
     }
 
-    /*
+    /**
     * Runs when enter key is pressed in text field
-    * @param       ActionEvent a (not used but required)
-    * @return      void
+    * @param a passed from JavaFX
     */
     @FXML
     public void onEnter(ActionEvent a){
@@ -59,10 +82,9 @@ public class Controller implements Initializable{
 
     }
 
-    /*
+    /**
     * Runs when confidentiality check box is modified
-    * @param       ActionEvent a (not used but required)
-    * @return      void
+    * @param a passed from JavaFX
     */
     @FXML
     public void onClickConfidentiality(ActionEvent a){
@@ -72,10 +94,9 @@ public class Controller implements Initializable{
 
     }
 
-    /*
+    /**
     * Runs when integrity check box is modified
-    * @param       ActionEvent a (not used but required)
-    * @return      void
+    * @param a passed from JavaFX
     */
     @FXML
     public void onClickIntegrity(ActionEvent a){
@@ -85,10 +106,9 @@ public class Controller implements Initializable{
 
     }
 
-    /*
+    /**
     * Runs when authentication check box is modified
-    * @param       ActionEvent a (not used but required)
-    * @return      void
+    * @param a passed from JavaFX
     */
     @FXML
     public void onClickAuthentication(ActionEvent a){
@@ -98,10 +118,9 @@ public class Controller implements Initializable{
 
     }
 
-    /*
+    /**
     * Enable/disable checkboxes once connection is established/disconnected
-    * @param       Boolean value (set checkbox disabled value to this)
-    * @return      void
+    * @param value set checkbox disabled value to this
     */
     public void setCheckBoxes(Boolean value){
 
@@ -111,10 +130,9 @@ public class Controller implements Initializable{
 
     }
 
-    /*
-    * Add a line to the messaging window (for external use)
-    * @param       String message
-    * @return      void
+    /**
+    * Add a line to the messaging window
+    * @param text line to add to the messaging window
     */
     public void addText(String text){
 
@@ -122,10 +140,9 @@ public class Controller implements Initializable{
 
     }
     
-    /*
+    /**
     * Set local Messenger for passing on messages/commands
-    * @param       Messenger mes (our owner class)
-    * @return      void
+    * @param mes parent's class
     */
     public void setMessenger(Messenger mes){
 

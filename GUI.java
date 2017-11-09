@@ -7,19 +7,23 @@ import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
  
-/*
-* Initializes and sets up the GUI
-* Passes the controller to the owner (Messenger)
+/**
+* Initializes and sets up the GUI, passes the controller to the parent Messenger class
 */
 public class GUI extends Application{ 
 
-    private static Controller controller; //stores controller (only accessible when start method runs)
-    private static String id; //stores Messenger id
+    /**
+    * stores controller (only accessible when start method runs)
+    */
+    private static Controller controller;
+    /**
+    * stores Messenger id
+    */
+    private static String id;
 
-    /*
+    /**
     * Necessary method that runs when GUI is initialized
-    * @param       Stage stage (passed by JavaFX)
-    * @return      void
+    * @param stage passed by JavaFX
     */
     @Override
     public void start(Stage stage){
@@ -47,22 +51,21 @@ public class GUI extends Application{
 
     }
 
-    /*
-    * Gracefully handle exit other than by command
-    * @return      void
+    /**
+    * Gracefully handle exit other than by command, called by JavaFX on application close
     */
-    @Override //called by JavaFX when application closed
+    @Override
     public void stop(){
 
         System.exit(0); //stop all threads including connection listener and RMI
         
     }
 
-    /*
+    /**
     * For use by Messenger class, shares objects between messenger/controller
-    * @param       Messenger mes (owner, to be passed along to controller)
-    * @param       String id (for title bar)
-    * @return      Controller (to be passed to owner to allow direct access to controller)
+    * @param mes owner, to be passed along to controller
+    * @param localID value for title bar
+    * @return object passed to owner to allow direct access to controller
     */
     public static Controller getInstance(Messenger mes, String localID){ //starts the GUI and returns the controller
 

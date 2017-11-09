@@ -15,31 +15,58 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-/*
-* Handles security related tasks on behalf of Messenger
-* Interacts with the javax.crypto and java.security libraries
+/**
+* Handles security related tasks on behalf of Messenger, interacts with the javax.crypto and java.security libraries
 */
 class Security{
 
-    private Cipher enCipher; //shared key for encryption
-    private Cipher deCipher; //shared key for decryption
-    private KeyAgreement keyAgree; //object for access in multiple methods
-    private SecretKeySpec aesKey; //instance key for creating ciphers
-    private CommunicationInterface other; //messenger that we are communicating with
-
-    private CommunicationInterface self; //our Messenger parent
-    private String id; //id of our Messenger parent
-    private PrivateKey priv; //private key (not diffie-hellman)
-    PublicKey myPub; //public key (not diffie-hellman)
-
-    private static Boolean[] flags; //this will store the 3 security flags
-    //Let's set it manually for now and we can figure out how to modify later
-    //[0] - confidentiality
-    //[1] - integrity
-    //[2] - authentication
+    /**
+    * Shared key for encryption
+    */
+    private Cipher enCipher;
+    /**
+    * Shared key for decryption
+    */
+    private Cipher deCipher;
+    /**
+    * Object for access in multiple methods
+    */
+    private KeyAgreement keyAgree;
+    /**
+    * Instance key for creating ciphers
+    */
+    private SecretKeySpec aesKey;
+    /**
+    * Messenger that we are communicating with
+    */
+    private CommunicationInterface other;
 
     /*
-    * Initialize the class
+    * Our Messenger parent
+    */
+    private CommunicationInterface self;
+    /*
+    * Id of our Messenger parent
+    */
+    private String id;
+    /*
+    * Private key (not diffie-hellman)
+    */
+    private PrivateKey priv;
+    /*
+    * Public key (not diffie-hellman)
+    */
+    PublicKey myPub;
+
+    /*
+    * Stores the 3 security flas in the following order: confidentiality, integrity, authentication
+    */
+    private static Boolean[] flags;
+
+    /**
+    * Initialize Security
+    * @param parent object of caller
+    * @param parentID id of caller
     */
     public Security(CommunicationInterface parent, String parentID) throws Exception{
 
@@ -57,11 +84,9 @@ class Security{
 
     }
 
-    /*
-    * First step in diffie-hellman protocol
-    * Generate public key and send to other party
-    * @param       CommunicationInterface obj (party to send to)
-    * @return      void
+    /**
+    * First step in diffie-hellman protocol, generate public key and send to other party
+    * @param obj party to send to
     */
     public void createSharedSecret(CommunicationInterface obj) throws Exception{
 
@@ -78,12 +103,10 @@ class Security{
 
     }
 
-    /*
-    * Second step in diffie-hellman protocol
-    * Take a public key, and generate our own
-    * Send to the other party to create a shared secret
-    * @param       byte[] otherPubEnc (other party's public key)
-    * @return      void
+    /**
+    * Second step in diffie-hellman protocol, take a public key and generate our own, send to the other party to create a shared secret
+    * @param otherPubEnc other party's public key
+    * @param other object of other party
     */
     public void createPub(byte[] otherPubEnc, CommunicationInterface other) throws Exception{
 
@@ -113,12 +136,10 @@ class Security{
 
     }
 
-    /*
-    * Third step in diffie-hellman protocol
-    * Take a public key and create a shared secret
-    * Take cipher params and use secret to create a cipher
-    * @param       byte[] otherPubEnc (other party's public key)
-    * @return      void
+    /**
+    * Third step in diffie-hellman protocol, take a public key and create a shared secret, take cipher params and use secret to create a cipher
+    * @param otherPubEnc other party's public key
+    * @param otherParams other party's cypher paremeters
     */
     public void share(byte[] otherPubEnc, byte[] otherParams) throws Exception{
 
@@ -140,11 +161,9 @@ class Security{
 
     }
 
-    /*
-    * Last step in diffie-hellman protocol
-    * Take cipher params to create a decoder
-    * @param       byte[] params
-    * @return      void
+    /**
+    * Last step in diffie-hellman protocol, take cipher params to create a decoder
+    * @param params cipher parameters
     */
     public void createDecoder(byte[] params) throws Exception{
 
@@ -155,10 +174,10 @@ class Security{
 
     }
 
-    /*
+    /**
     * Encrypt text using the cipher
-    * @param       String plaintext
-    * @return      byte[] ciphertext
+    * @param plaintext readable version of message
+    * @return unreadable version of message
     */
     private byte[] encrypt(String plaintext) throws Exception{
 
@@ -166,10 +185,10 @@ class Security{
 
     }
 
-    /*
+    /**
     * Utilize flags to create a sendable message
-    * @param       String msg (to make sendable)
-    * @return      btye[] msg (sendable)
+    * @param msg message to make sendable
+    * @return sendable message
     */
     public byte[] send(String msg) throws Exception{
 
@@ -181,10 +200,10 @@ class Security{
 
     }
 
-    /*
+    /**
     * Decrypt text using the cipher
-    * @param       byte[] ciphertext
-    * @return      String plaintext
+    * @param ciphertext unreadable version of message
+    * @return readable version of message
     */
     private String decrypt(byte[] ciphertext) throws Exception{
 
@@ -192,10 +211,10 @@ class Security{
 
     }
 
-    /*
+    /**
     * Utilize flags to create a sendable message
-    * @param       byte[] msg (to make sendable)
-    * @return      String msg (sendable)
+    * @param msg message to make readable
+    * @return readable message
     */
     public String receive(byte[] msg) throws Exception{
 
@@ -207,10 +226,9 @@ class Security{
 
     }
 
-    /*
-    * Set flags from Messenger
-    * @param       Boolean[] flag
-    * @return      void
+    /**
+    * Set security flags from Messenger
+    * @param newFlags security flags to set
     */
     public void setFlags(Boolean[] newFlags){
 
@@ -218,10 +236,9 @@ class Security{
 
     }
 
-    /*
-    * Set flags from Messenger
-    * @param       Boolean[] flag
-    * @return      void
+    /**
+    * Get security flags and return them
+    * @return current security flags
     */
     public Boolean[] getFlags(){
 
@@ -229,9 +246,9 @@ class Security{
 
     }
 
-    /*
+    /**
     * Get private key for the current messenger from a file
-    * @return      PrivateKey
+    * @return our private key
     */
     private PrivateKey getPrivate() throws Exception{
 
@@ -243,10 +260,10 @@ class Security{
 
     }
 
-    /*
+    /**
     * Get public key for the specified messenger from a file
-    * @param       String messenger (id of messenger to get public key for)
-    * @return      PublicKey
+    * @param messenger id of messenger to get public key for
+    * @return public key of the messenger
     */
     private PublicKey getPublic(String messenger) throws Exception{
 
@@ -257,29 +274,62 @@ class Security{
         return keyFac.generatePublic(x509KeySpec);
 
     }
+
+    /**
+    * Create a checksum for a specific message
+    * @param message message to generate a checksum for
+    * @return created checksum
+    */
     private String generateCheckSum(String message){
+
       return ""; //this is temporary Kyle, please replace with your code
+
     }
 
+    /**
+    * Encrypt a given checksum
+    * @param receiver id of Messenger to receive
+    * @param inputData data to encrypt
+    * @return encrypted checksum
+    */
     public byte[] encryptCheckSum(String receiver, byte[] inputData) throws Exception {
+
         PublicKey key = getPublic(receiver);
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.PUBLIC_KEY, key);
         byte[] encryptedBytes = cipher.doFinal(inputData);
         return encryptedBytes;
+
     }
+
+    /**
+    * Encrypt a given checksum
+    * @param checksum checksum to decrypt
+    * @return decrypted checksum
+    */
     public byte[] decryptCheckSum(byte[] checksum) throws Exception {
+
         PrivateKey key = getPrivate();
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.PRIVATE_KEY, key);
         byte[] decryptedBytes = cipher.doFinal(checksum);
         return decryptedBytes;
+
     }
+
+    /**
+    * Compare two checksums
+    * @param checksum checksum to check
+    * @param message message to confirm same as checksum
+    * @return true if same, false otherwise
+    */
     private boolean compareCheckSum(byte[] checksum, String message){
+
       if(generateCheckSum(message).equals(checksum)){
         return true;
       }
       return false;
+
     }
 
 }
