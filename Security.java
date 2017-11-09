@@ -258,17 +258,17 @@ class Security{
 
     }
     private String generateCheckSum(String message){
-      return message.hashCode();
+      return ""; //this is temporary Kyle, please replace with your code
     }
 
-    public static byte[] encryptCheckSum(String receiver, byte[] inputData) throws Exception {
+    public byte[] encryptCheckSum(String receiver, byte[] inputData) throws Exception {
         PublicKey key = getPublic(receiver);
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.PUBLIC_KEY, key);
         byte[] encryptedBytes = cipher.doFinal(inputData);
         return encryptedBytes;
     }
-    public static byte[] decryptCheckSum(byte[] checksum) throws Exception {
+    public byte[] decryptCheckSum(byte[] checksum) throws Exception {
         PrivateKey key = getPrivate();
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.PRIVATE_KEY, key);
