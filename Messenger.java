@@ -198,7 +198,11 @@ class Messenger implements CommunicationInterface{
             String temp[] = msg.split(" "); //access the desired connection id
             CommunicationInterface receiver = null;
             if(temp[1].equals(id)){
-                cont.addText("[Cannot connect to self]");
+                cont.addText("[Cannot connect to self]\n");
+                return;
+            }
+            if(comm != null){
+                cont.addText("[Please disconnect first]\n");
                 return;
             }
             try{
