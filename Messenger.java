@@ -147,10 +147,13 @@ class Messenger implements CommunicationInterface{
     */
     public void message(byte[] msg, byte[] checksum){
 
+        System.out.println("Received: " + new String(msg));
+
         try{
             cont.addText(comm.getID() + ": " + secure.receive(msg, checksum) + "\n"); //display received messages
         }catch(Exception e){
             System.out.println("message receiving error");
+            e.printStackTrace();
         }
 
     }
