@@ -49,7 +49,7 @@ class Messenger implements CommunicationInterface{
     * @return      String id
     */
     public String getID(){
-        
+
         return id;
 
     }
@@ -134,7 +134,7 @@ class Messenger implements CommunicationInterface{
     public Boolean[] getFlags(){
 
         return secure.getFlags();
-    
+
     }
 
     /*
@@ -142,10 +142,10 @@ class Messenger implements CommunicationInterface{
     * @param       String message
     * @return      void
     */
-    public void message(byte[] msg){
+    public void message(byte[] msg, byte[] checksum){
 
         try{
-            cont.addText(comm.get(0).getID() + ": " + secure.receive(msg) + "\n"); //display received messages
+            cont.addText(comm.get(0).getID() + ": " + secure.receive(msg, checksum) + "\n"); //display received messages
         }catch(Exception e){
             System.out.println("message receiving error");
         }
@@ -162,10 +162,10 @@ class Messenger implements CommunicationInterface{
     public void typed(String msg){
 
         cont.addText("you: " + msg + "\n"); //display the message for the user
-
         for(int i = 0; i < comm.size(); i++){ //sends message to all connections
             try{
-                comm.get(i).message(secure.send(msg)); //send a message
+              byte[][] info = secure.send(msg, comm.get(0).getID());
+              comm.get(i).message(info[0],info[1]); //send a message
             }catch(Exception e){
                 System.out.println("message sending error");
             }
@@ -249,7 +249,7 @@ class Messenger implements CommunicationInterface{
     public void init(String other){
 
         cont.setCheckBoxes(true); //disable flag checkboxes
-        
+
         CommunicationInterface sender = null;
         try{
             sender = (CommunicationInterface) registry.lookup(other); //get from RMI

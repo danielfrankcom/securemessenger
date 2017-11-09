@@ -11,6 +11,7 @@ import javax.crypto.KeyAgreement;
 import javax.crypto.interfaces.DHPublicKey;
 import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.ByteBuffer;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -171,14 +172,21 @@ class Security{
     * @param       String msg (to make sendable)
     * @return      btye[] msg (sendable)
     */
-    public byte[] send(String msg) throws Exception{
-
-        if(flags[0]){
-            return encrypt(msg);
-        }else{
-            return msg.getBytes();
-        }
-
+    public byte[][] send(String msg, String receiver) throws Exception{
+      testingMethod();
+      byte[] msg_ret = msg.getBytes();
+      byte[] checksum_ret = new byte[0];
+      if(flags[0]){
+        msg_ret = encrypt(msg);
+      }
+      if(flags[1]){
+        checksum_ret = encryptCheckSum(receiver, generateCheckSum(msg));
+        System.out.println("Encrypted checksum in SEND: "+checksum_ret);
+      }
+      byte[][] ret = new byte[2][];
+      ret[0] = msg_ret;
+      ret[1] = checksum_ret;
+      return ret;
     }
 
     /*
@@ -197,14 +205,28 @@ class Security{
     * @param       byte[] msg (to make sendable)
     * @return      String msg (sendable)
     */
-    public String receive(byte[] msg) throws Exception{
-
-        if(flags[0]){
-            return decrypt(msg);
-        }else{
-            return new String(msg);
+    public String receive(byte[] msg, byte[] checksum) throws Exception{
+      String ret;
+      if(flags[0]){
+          ret = decrypt(msg);
+      }else{
+          ret = new String(msg);
+      }
+      if(flags[1]){
+        System.out.println("Encrypted Checksum in receive: "+checksum);
+        byte[] decrypted_cs = decryptCheckSum(checksum);
+        System.out.println("Decrypted Checksum in receive: "+decrypted_cs);
+        System.out.println("Ret in receive: "+ret);
+        if(compareCheckSum(decrypted_cs, ret)){
+          System.out.println("Debug 000: "+ret);
+          return ret;
         }
-
+        else{
+          return "Checksum does not match";
+        }
+      }
+      System.out.println("Debug 001: "+ret);
+      return ret;
     }
 
     /*
@@ -257,18 +279,21 @@ class Security{
         return keyFac.generatePublic(x509KeySpec);
 
     }
-    private String generateCheckSum(String message){
-      return message.hashCode();
+    private byte[] generateCheckSum(String message){
+      int m = message.hashCode();
+      ByteBuffer bb = ByteBuffer.allocate(4);
+      bb.putInt(m);
+      return bb.array();
     }
 
-    public static byte[] encryptCheckSum(String receiver, byte[] inputData) throws Exception {
+    public byte[] encryptCheckSum(String receiver, byte[] inputData) throws Exception {
         PublicKey key = getPublic(receiver);
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.PUBLIC_KEY, key);
         byte[] encryptedBytes = cipher.doFinal(inputData);
         return encryptedBytes;
     }
-    public static byte[] decryptCheckSum(byte[] checksum) throws Exception {
+    public byte[] decryptCheckSum(byte[] checksum) throws Exception {
         PrivateKey key = getPrivate();
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.PRIVATE_KEY, key);
@@ -276,10 +301,24 @@ class Security{
         return decryptedBytes;
     }
     private boolean compareCheckSum(byte[] checksum, String message){
-      if(generateCheckSum(message).equals(checksum)){
+      byte[] temp_checksum = generateCheckSum(message);
+      if(temp_checksum == checksum){
         return true;
       }
+      System.out.println("Temp checksum: "+temp_checksum);
+      System.out.println("CHECKSUM: "+checksum);
       return false;
+    }
+    private void testingMethod() throws Exception{
+      System.out.println("-------------------------");
+      String message = "Hello";
+      byte[] checksum = generateCheckSum(message);
+      byte[] encryptedCheckSum = encryptCheckSum("Server",checksum);
+      System.out.println("Unencrypted checksum: "+checksum);
+      System.out.println("Encrypted checksum: "+encryptedCheckSum);
+      byte[] decryptedChecksum = decryptCheckSum(encryptedCheckSum);
+      System.out.println("Decrypted checksum: "+decryptedChecksum);
+      System.out.println("-------------------------");
     }
 
 }
