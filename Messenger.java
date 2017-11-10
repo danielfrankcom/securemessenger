@@ -170,7 +170,7 @@ class Messenger implements CommunicationInterface{
             }
             comm.message(info[0],info[1]); //send a message
         }catch(Exception e){
-            System.out.println(e+"message sending error");
+            System.out.println("message sending error");
         }
         cont.addText("you: " + msg + "\n"); //display the message for the user
     }
