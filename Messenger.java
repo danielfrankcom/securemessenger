@@ -253,7 +253,6 @@ class Messenger implements CommunicationInterface{
             }
             cont.addText("[Connected to " + temp[1] + "]\n"); //display connection status for user
             cont.addText("[Type ':disconnect' to remove connections from other messengers]\n"); //display disconnect prompt
-            cont.addText("[Type ':auth <password>' to authenticate yourself]\n"); //display authenticate prompt
 
         }else if(msg.contains("auth")){ // if user would like to authenticate.
           String temp[] = msg.split(" "); //access the desired password
@@ -295,7 +294,6 @@ class Messenger implements CommunicationInterface{
         comm = sender; //save sender
         cont.addText("[Connected to " + other + "]\n"); //display connection status for user
         cont.addText("[Type ':disconnect' to remove connections from other messengers]\n"); //display disconnect prompt
-        cont.addText("[Type ':auth <password>' to authenticate yourself]\n"); //display authenticate prompt
     }
 
     /**
@@ -337,6 +335,7 @@ class Messenger implements CommunicationInterface{
 
         cont.addText("[Your id is: " + id + "]\n");
         cont.addText("[Type ':q' to quit or ':connect <id>' to connect to another messenger]\n");
+        cont.addText("[Type ':auth <password>' to authenticate yourself]\n"); //display authenticate prompt
 
         try{
             secure = new Security(self, id);

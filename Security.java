@@ -318,12 +318,11 @@ class Security{
     * @return created checksum
     */
     private byte[] generateCheckSum(String message){
-
         int m = message.hashCode();
         ByteBuffer bb = ByteBuffer.allocate(4);
         bb.putInt(m);
+        System.out.println("Generated checksum: "+toHexString(bb.array()));
         return bb.array();
-
     }
 
     /**
@@ -333,13 +332,11 @@ class Security{
     * @return encrypted checksum
     */
     private byte[] encryptCheckSum(String receiver, byte[] inputData) throws Exception {
-
         PublicKey key = getPublic(receiver);
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.PUBLIC_KEY, key);
         byte[] encryptedBytes = cipher.doFinal(inputData);
         return encryptedBytes;
-
     }
 
     /**
@@ -367,6 +364,7 @@ class Security{
 
         byte[] temp_checksum = generateCheckSum(message);
         if(Arrays.equals(temp_checksum, checksum)){
+            System.out.println("Checksum matches: "+toHexString(temp_checksum));
             return true;
         }
         return false;
