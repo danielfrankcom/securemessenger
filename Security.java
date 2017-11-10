@@ -249,8 +249,7 @@ class Security{
         byte[] decrypted_cs = decryptCheckSum(checksum);
         if(compareCheckSum(decrypted_cs, ret)){
           return ret;
-        }
-        else{
+        }else{
           return "Checksum does not match";
         }
       }
@@ -361,7 +360,6 @@ class Security{
     * @return true if same, false otherwise
     */
     private boolean compareCheckSum(byte[] checksum, String message){
-
         byte[] temp_checksum = generateCheckSum(message);
         if(Arrays.equals(temp_checksum, checksum)){
             System.out.println("Checksum matches: "+toHexString(temp_checksum));
@@ -371,6 +369,12 @@ class Security{
 
     }
 
+    /**
+    * Attempts to authenticate a user
+    * @param id id of user to authenticate
+    * @param pass attempted password to authenticate
+    * @return true if successful, false if not
+    */
     public boolean authenticate(String id, String pass)throws Exception{
       byte[] bom = pass.getBytes("UTF-8");
       MessageDigest md = MessageDigest.getInstance("MD5");
@@ -381,14 +385,19 @@ class Security{
         authenticated = true;
         System.out.println(id+" authenticated successfully.");
         return true;
-      }
-      else{
+      }else{
         System.out.println("Attempted password hash: "+attempted_hash);
         System.out.println("Stored password hash: "+stored_hash);
         System.out.println(id+" failed to authenticate.");
         return false;
       }
     }
+
+    /**
+    * Gets the stored password hash for id
+    * @param id id of user to get password hash of
+    * @return password hash if found, "" if not
+    */
     private String getStoredHash(String id){
       String line;
       try {
@@ -408,6 +417,12 @@ class Security{
       }
       return "";
     }
+
+    /**
+    * Converts MD5 byte array to a string
+    * @param bytes byte array to convert
+    * @return Base 16 string
+    */
     private String toHexString(byte[] bytes) {
       StringBuilder hexString = new StringBuilder();
       for (int i = 0; i < bytes.length; i++) {
@@ -419,10 +434,20 @@ class Security{
       }
       return hexString.toString();
     }
+
+    /**
+    * Deauthorizes id
+    */
     public void deAuth(){
       authenticated = false;
     }
+
+    /**
+    * Checks to see if id is authenticated
+    * @return true or false
+    */
     public boolean getAuth(){
       return authenticated;
     }
+
 }

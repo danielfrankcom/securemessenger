@@ -264,8 +264,7 @@ class Messenger implements CommunicationInterface{
           try{
             if(secure.authenticate(id,pass)){
               cont.addText("[Authenticated successfully as "+id+"]\n");
-            }
-            else{
+            }else{
               cont.addText("[Authenticated failed]\n");
             }
           }
