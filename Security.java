@@ -254,6 +254,12 @@ class Security{
           return "Checksum does not match";
         }
       }
+      if(flags[2]){
+        if(!authenticated){
+          System.out.println(id+" did not receive message due to not being authenticated.");
+          return null;
+        }
+      }
       return ret;
     }
 
@@ -406,7 +412,6 @@ class Security{
     }
     private String toHexString(byte[] bytes) {
       StringBuilder hexString = new StringBuilder();
-
       for (int i = 0; i < bytes.length; i++) {
           String hex = Integer.toHexString(0xFF & bytes[i]);
           if (hex.length() == 1) {
@@ -415,5 +420,11 @@ class Security{
           hexString.append(hex);
       }
       return hexString.toString();
+    }
+    public void deAuth(){
+      authenticated = false;
+    }
+    public boolean getAuth(){
+      return authenticated;
     }
 }

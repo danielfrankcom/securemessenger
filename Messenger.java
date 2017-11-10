@@ -146,7 +146,10 @@ class Messenger implements CommunicationInterface{
     * @param msg message received
     */
     public void message(byte[] msg, byte[] checksum){
-
+        if(secure.getFlags()[2] && !secure.getAuth()){
+          cont.addText("[You must authenticate before receiving a message]\n");
+          return;
+        }
         System.out.println("Received: " + new String(msg));
         try{
             cont.addText(comm.getID() + ": " + secure.receive(msg, checksum) + "\n"); //display received messages
@@ -190,6 +193,7 @@ class Messenger implements CommunicationInterface{
             cont.setCheckBoxes(false); //re-enable flag checkboxes
             try{
                 comm.disconnect();
+                secure.deAuth();
             }catch(RemoteException e){
                 System.out.println("error disconnecting");
             }
